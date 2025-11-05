@@ -1,0 +1,20 @@
+build-idx:
+  generated-by: csolution version 2.12.0
+  cdefault: ${CMSIS_COMPILER_ROOT}/cdefault.yml
+  csolution: Aufgabe_1_Taschenrechner_RPN.csolution.yml
+  cbuild-run: out/Aufgabe_1_Taschenrechner_RPN+ITSboard.cbuild-run.yml
+  tmpdir: tmp
+  cprojects:
+    - cproject: Aufgabe_1_Taschenrechner_RPN.cproject.yml
+  cbuilds:
+    - cbuild: out/Aufgabe_1_Taschenrechner_RPN/ITSboard/Debug/Aufgabe_1_Taschenrechner_RPN.Debug+ITSboard.cbuild.yml
+      project: Aufgabe_1_Taschenrechner_RPN
+      configuration: .Debug+ITSboard
+      messages:
+        info:
+          - Aufgabe_1_Taschenrechner_RPN.cbuild-pack.yml - file is already up-to-date
+          - Aufgabe_1_Taschenrechner_RPN+ITSboard.cbuild-run.yml - file is already up-to-date
+          - Aufgabe_1_Taschenrechner_RPN.Debug+ITSboard.cbuild.yml - file is already up-to-date
+      packs-unused:
+        - pack: ARM::CMSIS-DSP@1.16.2
+        - pack: ARM::CMSIS-NN@7.0.0
