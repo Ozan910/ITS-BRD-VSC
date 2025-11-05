@@ -66,3 +66,6 @@ Programs/**/stm32cubef4/
 *.bak
 *.tmp
 *.swp
+
+# ===== VS Code =====
+.vscode/
