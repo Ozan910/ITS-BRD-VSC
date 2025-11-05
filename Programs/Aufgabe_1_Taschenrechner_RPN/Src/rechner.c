@@ -15,6 +15,23 @@ int numToString(int num, char *result){
         result[1] = 0;
         return SUCCESS;
     }
+    if(num == INT_MIN){
+        result[0] = '-';
+        result[1] = '2';
+        result[2] = '1';
+        result[3] = '4';
+        result[4] = '7';
+        result[5] = '4';
+        result[6] = '8';
+        result[7] = '3';
+        result[8] = '6';
+        result[9] = '4';
+        result[10] = '8';
+        result[11] = 0;
+
+        return SUCCESS;
+
+    }
 
     //checken ob die Zahl negativ ist
     bool isNegative = (num < 0);
