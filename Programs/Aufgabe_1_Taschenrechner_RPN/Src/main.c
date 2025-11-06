@@ -121,6 +121,8 @@ int main(void) {
 
 			case CLEAR:
 				stack_reset();
+				clearStdout();
+				clearEchoTerm();
 				break;
 
 			case DOUBLE:

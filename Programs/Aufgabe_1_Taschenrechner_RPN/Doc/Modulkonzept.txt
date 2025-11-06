@@ -1,0 +1,22 @@
+//main.c
+- Enthält den Superloop und ruft "nextToken()" auf.
+- Steuert das Programm durch einen Switch-Case basierend auf dem aktuellen Token.
+- Ruft Rechenfunktionen aus "rechner.c" auf und überprüft ob Fehler vorliegen mit "refresh.c"
+
+//fehler.c
+- Fehlerbehandlung
+- Funktion "refresh(int errcode)": zeigt Fehlercode auf dem Display und blockiert bis "C" gedrückt wird.
+
+//stack.c
+- Enthält den Stack für die Operanden
+- Enthält die Klassischen Stack Funktionen
+- Fehler werden über Rückgabewerte gemeldet und weite gereicht
+
+//rechner.c
+- Implmentiert die Rechenoperationen (add, sub, mul, dic, dup, swap)
+- Prüft auf Integer-Overflow, Integer-Underflow, Zero-Division
+- Enthält "numToString()" um Integer in Strings umzuwandeln und printed diese mit "myPrint()"
+
+//display.c, scanner.c und token.h
+- Gegeben von der Aufgabenstellung
+- Bilden Verbindung zwischen User und System

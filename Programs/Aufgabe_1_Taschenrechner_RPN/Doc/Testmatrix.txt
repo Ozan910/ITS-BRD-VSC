@@ -1,0 +1,53 @@
+Testmatrix - Praktikum 1 RPN Taschenrechner
+Durchgeführt am 05.11.2025, V1
+
+| Nr. |		Testbeschreibung	|	Erwartung	|	Ergebnis	|     Status	|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|	Vorgegebene Tests										|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|  1. | Mul: (-2)*1024*1024*1024	| kein artihm. Overflow | -2 147 483 648	| 🗸		|
+|  2. | Mul: Ergebnis aus 1. * (-1)	| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+|  3. | Div: x / 0			| ZERO_DIVISION		| ZERO_DIVISION		| 🗸		|
+|  4. | Eingabe 2 147 483 648		| Fehler (> INT_MAX)	| INTEGER_OVERFLOW	| 🗸		|
+|  5. | Eingabe 2 147 483 647		| ok (== INT_MAX)	| ok			| 🗸		|
+|  6. | Anzeige -2 147 483 648		| ok (== INT_MIN)	| ok			| 🗸		|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|	Addition und Subtraktion									|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|  7. | Add: 1 + 3			| Ergebnis = 4		| 4			| 🗸		|
+|  8. | Sub: 5 - 3			| Ergebnis = 2		| 2			| 🗸		|
+|  9. | Add: INT_MAX + 1		| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+| 10. | Add: (-1) + INT_MIN		| INTEGER_UNDERFLOW	| INTEGER_UNDERFLOW	| 🗸		|
+| 11. | Sub: INT_MIN - 1		| INTEGER_UNDERFLOW	| INTEGER_UNDERFLOW	| 🗸		|
+| 12. | Sub: INT_MAX - (-1)		| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|	Multiplikation											|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+| 13. | Mul:  235 * -235		| -55.225		| -55.225		| 🗸		|
+| 14. | Mul:  50.000 *  50.000		| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+| 15. | Mul: -50.000 * -50.000		| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+| 16. | Mul:  50.000 * -50.000		| INTEGER_UNDERFLOW	| INTEGER_UNDERFLOW	| 🗸		|
+| 17. | Mul: -50.000 *  50.000		| INTEGER_UNDERFLOW	| INTEGER_UNDERFLOW	| 🗸		|
+| 18. | Mul: -1	* -2 147 483 648	| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+| 19. | Mul: -2 147 483 648 * -1	| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|	Division											|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+| 20. | Div: 400 / 10 			| 40			| 40			| 🗸		|
+| 21. | Div: 32  / 10			| 3			| 3			| 🗸		|
+| 22. | Div: 100 / 0			| ZERO_DIVISION		| ZERO_DIVISION		| 🗸		|
+| 23. | Div: -2 147 483 648 / -1	| INTEGER_OVERFLOW	| INTEGER_OVERFLOW	| 🗸		|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+|	Stack-Verhalten											|
+|-----|---------------------------------|-----------------------|-----------------------|---------------|
+| 24. | Pop auf Empty (z.B. durch add)	| STACK_UNDERFLOW	| STACK_UNDERFLOW	| 🗸		|
+| 25. | Push auf voll (z.B. durch dup)	| STACK_OVERFLOW	| STACK_OVERFLOW	| 🗸		|
+| 26. | Reset dann Print		| STACK_EMPTY		| STACK_EMPTY		| 🗸		|
+| 27. | Reset dann "1" dann Print Stack	| Print nur "1"		| 1			| 🗸		|
+| 28. | dupe auf leeren Stack		| STACK_EMPTY		| STACK_EMPTY		| 🗸		|
+| 29. | "2", "1" dann swap und PRT	| 2 1			| 2 1			| 🗸		|
+| 30. | swap mit 1 Element		| STACK_UNDEFLOW	| STACK_UNDERFLOW	| 🗸		|
+
+🗸	: Erfolgreich
+×	: Fehlgeschlagen
+-	: Nicht getestet

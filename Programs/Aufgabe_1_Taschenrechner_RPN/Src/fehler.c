@@ -9,37 +9,40 @@ void refresh(int errcode){
     }
     setErrMode();
     clearStdout();
+    printStdout("An Error has occured");
+    printStdout("\n");
     switch (errcode){
         
         case STACK_OVERFLOW:
-            printStdout("Fehler aufgetreten: Stack Overflow. Bitte C druecken zum resetten");
+            printStdout("Stack Overflow");
             break;
 
         case STACK_UNDERFLOW:
-            printStdout("Fehler aufgetreten: Stack Underflow. Bitte C druecken zum resetten");
+            printStdout("Stack Underflow");
             break;
 
         case STACK_EMPTY:
-            printStdout("Fehler aufgetreten: Stack ist leer. Bitte C druecken zum resetten");
+            printStdout("Stack is empty");
             break;
 
         case INTEGER_OVERFLOW:
-            printStdout("Fehler aufgetreten: Integer Overflow. Bitte C druecken zum resetten");
+            printStdout("Integer Overflow");
             break;
 
         case INTEGER_UNDERFLOW:
-            printStdout("Fehler aufgetreten: Integer Underflow. Bitte C druecken zum resetten");
+            printStdout("Integer Underflow");
             break;
 
         case ZERO_DIVISION:
-            printStdout("Fehler aufgetreten: Division durch Null. Bitte C druecken zum resetten ");
+            printStdout("Zero Division");
             break;
 
         default:
-            printStdout("Fehler aufgetreten. Bitte C drücken zum zurücksetzen");
+            printStdout(" ");
             break;
     }
-
+    printStdout("\n");
+    printStdout("press C to reset");
     T_token currentToken = nextToken();
     while(currentToken.tok != CLEAR){
        currentToken = nextToken();

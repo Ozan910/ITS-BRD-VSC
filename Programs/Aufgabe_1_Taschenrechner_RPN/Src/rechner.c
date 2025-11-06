@@ -219,7 +219,11 @@ int swap(){
 
 //print funktion
 void myPrint(int number){
+    if(isBottomLine()){
+        clearStdout();
+    }
     char str[16];
     numToString(number, str);
     printStdout(str);
+    printStdout("\n");
 }

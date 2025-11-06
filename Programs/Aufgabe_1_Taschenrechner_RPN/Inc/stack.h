@@ -1,6 +1,6 @@
 #ifndef STACK_H
 #define STACK_H
-#define STACK_SIZE 12
+#define STACK_SIZE 14
 
 int stack_reset(void);
 int stack_push(int val);

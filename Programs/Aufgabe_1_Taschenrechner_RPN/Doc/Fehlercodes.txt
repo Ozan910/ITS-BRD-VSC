@@ -1,0 +1,11 @@
+#Fehlercodes
+
+| Code |        Name        | Beschreibung		        |
+|------|--------------------|-----------------------------------|
+|  0   | SUCCESS            | Keine Fehler			|
+| -1   | STACK_OVERFLOW     | Stack ist voll			|
+| -2   | STACK_UNDERFLOW    | Stack ist leer			|
+| -3   | STACK_EMPTY        | Kein Element im Stack		|
+| -4   | INTEGER_OVERFLOW   | Integer Überlauf (Zahl zu groß)	|
+| -5   | INTEGER_UNDERFLOW  | Integer Unterlauf (Zahl zu klein)	|
+| -6   | ZERO_DIVISION      | Division durch 0			|
