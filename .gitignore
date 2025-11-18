@@ -13,22 +13,6 @@ out/
 build/
 tmp/
 
-# ===== Keil / CMSIS project files =====
-*.axf
-*.elf
-*.map
-*.lst
-*.dep
-*.htm
-*.o
-*.obj
-*.d
-*.uvoptx
-*.uvprojx
-*.cprj.bak
-*.csolution.bak
-*.uvguix.*
-
 # ===== VS Code =====
 .vscode/
 *.log
@@ -52,15 +36,6 @@ desktop.ini
 .clangd/
 .ccls-cache/
 
-# ===== CMSIS / ITS Board specific =====
-Programs/**/.cmsis/
-Programs/**/TestNewFont/
-Programs/**/Stack/
-Programs/**/Logs/
-Programs/**/ITS_BRD_LIB/Utilities/AddFonts/
-Programs/**/DisplayWaveshare/
-Programs/**/Drivers/
-Programs/**/stm32cubef4/
 
 # ===== User-specific =====
 *.bak
