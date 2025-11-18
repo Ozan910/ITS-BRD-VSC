@@ -48,8 +48,7 @@ int main(void) {
 	//TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
 	initDisplay();
 	setNormalMode();
-	//printStdout("alles gut stdout?");
-	//printToEchoLine('X');
+
 
 
 	//superloop
@@ -78,10 +77,10 @@ int main(void) {
 				break;
 
 			case PRT:{
-				if(getCount() == 0){
-					ret = STACK_EMPTY;
-					break;
-				}
+				//if(getCount() == 0){
+				//	ret = STACK_EMPTY;
+				//	break;
+				//}
 				int x;
 				ret = stack_peek(&x);
 				if(ret == 0){
@@ -101,20 +100,13 @@ int main(void) {
 					ret = STACK_EMPTY;
 					break;
 				}
-				int stackContent[currentStackSize];
-				//im while loop stack in array schreiben
-				int i = 0;
 				int val;
-				
-				while(i < currentStackSize){
-					stack_pop(&val);
+				for (int i = currentStackSize-1; i >= 0;i--){
+					ret = stack_getElement(i, &val);
+					if(ret != 0){
+						break;
+					}
 					myPrint(val);
-					stackContent[i] = val;
-					i++;
-				}
-				while(i > 0){
-					i--;
-					stack_push(stackContent[i]);
 				}
 				break;
 			}

@@ -3,11 +3,11 @@ Stack
  */
 #include "stack.h"
 #include "fehler.h"
+#define STACK_SIZE 14
 
 
-
- int stack[STACK_SIZE];
- int count = 0;
+ static int stack[STACK_SIZE];
+ static int count = 0;
 
 
  int stack_reset(){
@@ -46,4 +46,12 @@ Stack
 
  int getCount(){
     return count;
+ }
+
+ int stack_getElement(int index, int *val){
+    if(index >= count){
+    return STACK_EMPTY;
+    }
+    *val = stack[index];
+    return SUCCESS;
  }

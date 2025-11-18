@@ -222,7 +222,7 @@ void myPrint(int number){
     if(isBottomLine()){
         clearStdout();
     }
-    char str[16];
+    char str[12];
     numToString(number, str);
     printStdout(str);
     printStdout("\n");
