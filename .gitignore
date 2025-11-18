@@ -69,3 +69,6 @@ Programs/**/stm32cubef4/
 
 # ===== VS Code =====
 .vscode/
+*.cbuild-idx
+*.cbuild-pack
+*.cproject.yml
