@@ -33,11 +33,8 @@
 #include "timer.h"   
 
 // --- KONSTANTEN ---
-#define REFRESH_RATE_TICKS (500000 * TICKS_PER_US)
+#define REFRESH_RATE_TICKS (250000 * TICKS_PER_US)
 
-// --- GLOBALE VARIABLEN (BUFFER) ---
-static char displayBuffer[32]; 
-static int  bufferReadIndex = 0; 
 static bool errorWasActive = false; // Um den Zustandswechsel zu erkennen
 
 // --- HILFSFUNKTIONEN ---
@@ -79,15 +76,13 @@ int main(void) {
     uint32_t lastTimeTicks = getTimeStamp();
     long lastSteps = 0;
 
-    // Puffer initial leeren
-    displayBuffer[0] = '\0';
 
     // --- SUPER LOOP ---
     while (1) {
         // ============================================================
         // TEIL A: Der "Fast Path"
         // ============================================================
-        
+        uint32_t currentTime = getTimeStamp();
         Phase currentPhase = simPattern[sim_phase_counter];
 
         // Wir erhöhen den Zähler für den NÄCHSTEN Durchlauf
@@ -130,7 +125,7 @@ int main(void) {
                 ledOutputs_clearError();       // D21 aus
     
                 lastSteps = fsm_getStepCount();
-                lastTimeTicks = getTimeStamp();
+                lastTimeTicks = currentTime;
                 
                 errorWasActive = false;
             }
@@ -145,7 +140,7 @@ int main(void) {
             updateDirectionLEDs(dir); // D22/D23
 
             // 2. Zeitmessung & Rechnen
-            uint32_t currentTime = getTimeStamp();
+
             uint32_t timeDelta = currentTime - lastTimeTicks; 
 
             if (timeDelta >= REFRESH_RATE_TICKS) {
@@ -157,35 +152,17 @@ int main(void) {
                 double angle = calcRotationalAngle(steps);
                 double speed = calcAngularSpeed(stepDelta, timeDelta);
 
-				// C) Ausgabe ((((((((ERSATZ FÜR BUFFER))))))))
+				// C) Schreiben in den Buffer
                 displayOutputs_printAngle(angle);
                 displayOutputs_printAngularSpeed(speed);
-				
-				//Für Buffer
-                //snprintf(displayBuffer, sizeof(displayBuffer), "%6.1f|%6.1f", angle, speed);
-                
+
                 // D) Referenzen aktualisieren
                 lastSteps = steps;
                 lastTimeTicks = currentTime;
-                bufferReadIndex = 0; // Buffer bereit zum Senden machen
             }
 
-            	// 3. Gepufferte Ausgabe (Nur 1 Zeichen pro Loop!)
-            	// Das verhindert, dass die FSM blockiert wird.
-            //char charToSend = displayBuffer[bufferReadIndex];
-            
-            //if (charToSend != '\0') {
-					// Funktion für Char an richtige Stelle im Display
-                	// displayOutputs_writeNextChar(charToSend); <--- HYPOTHETISCH
-                
-                //bufferReadIndex++;
-                
-                	// Wenn wir das Ende erreicht haben, hören wir auf
-                //if (displayBuffer[bufferReadIndex] == '\0') {
-                    // Fertig gesendet
-                //}
-
-                HAL_Delay(50); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
+            displayOutputs_printNextChar();
+            HAL_Delay(0); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
             }
         }
     }

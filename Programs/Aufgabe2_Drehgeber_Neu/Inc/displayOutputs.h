@@ -41,5 +41,11 @@ void displayOutputs_printError(int errorCode);
 */
 void displayOutputs_clearError(void);
 
+/**
+* @brief Gibt pro Aufruf ein Zeichen auf dem Display aus (erst Winkel dann Speed)
+*
+*/
+void displayOutputs_printNextChar(void);
+
 #endif
 //EOF
