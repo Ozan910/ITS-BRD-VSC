@@ -1,46 +1,55 @@
-# ===== Build & CMSIS output =====
+########## Build- & CMSIS-/Keil-Output ##########
+
+# generelle Buildordner in allen Projekten
+**/build/
+**/out/
+**/tmp/
+**/Debug/
+**/Release/
+
+# csolution / cbuild Output
 /Programs/*/DebugConfig/
-/Programs/*/ITSboard/
 /Programs/*/RTE/
-/Programs/*/out/
-/Programs/*/build/
-/Programs/*/tmp/
 /Programs/**/.cbuild*/
 /Programs/**/cbuild-*.yml
 .cbuild/
 RTE/
-out/
-build/
-tmp/
 
-# ===== VS Code =====
-.vscode/
-*.log
-.vscode/settings.json
-.vscode/tasks.json
+# ggf. generierte Binaries/Artefakte
+**/*.o
+**/*.obj
+**/*.elf
+**/*.hex
+**/*.map
+**/*.log
 
-# ===== Tools =====
+########## Tools / vcpkg / CMake ##########
+
 vcpkg_installed/
 buildtrees/
 compile_commands.json
-*.cmake
 CMakeCache.txt
 CMakeFiles/
+*.cmake
 
-# ===== Windows system files =====
-Thumbs.db
-desktop.ini
+########## Editor-/User-Temp ##########
 
-# ===== Clang / IntelliSense =====
-*.clangd
-.clangd/
-.ccls-cache/
-
-
-# ===== User-specific =====
 *.bak
 *.tmp
 *.swp
+Thumbs.db
+desktop.ini
 
-# ===== VS Code =====
-.vscode/
+########## VS Code ##########
+# WICHTIG: .vscode NICHT global ignorieren,
+# damit tasks.json, c_cpp_properties.json etc. versioniert werden.
+# Nur Cache-/Auto-Kram raus:
+
+.vscode/ipch/
+.vscode/.cmake.api/
+.vscode/.config/
+
+# Keil / ARM generierte Cache-Dateien
+**/*.cbuild-idx.yml
+**/.clangd
+**/.cmsis/

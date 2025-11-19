@@ -117,6 +117,8 @@
   "cmake.ignoreCMakeListsMissing": true,
   "C_Cpp_Runner.msvcBatchPath": "",
   "clangd.arguments": [
-    "--compile-commands-dir=c:\\Users\\pisar\\Desktop\\Studium\\Semester 4\\GS\\OzanGit\\ITS-BRD-VSC\\Programs\\Aufgabe_1_Taschenrechner_RPN\\out\\Aufgabe_1_Taschenrechner_RPN\\ITSboard\\Debug"
-  ]
+    "--compile-commands-dir=c:\\Users\\OzanO\\gitProjekte\\GS\\ITS-BRD-VSC\\Programs\\Aufgabe2_Drehgeber_Neu\\out\\Aufgabe2_Drehgeber_Neu\\ITSboard\\Debug"
+  ],
+  "debug.hideSlowPreLaunchWarning": true,
+  "debug.showInStatusBar": "never"
 }
