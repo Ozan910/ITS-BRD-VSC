@@ -35,7 +35,6 @@
 // --- KONSTANTEN ---
 #define REFRESH_RATE_TICKS (500000 * TICKS_PER_US)
 
-
 // --- GLOBALE VARIABLEN (BUFFER) ---
 static char displayBuffer[32]; 
 static int  bufferReadIndex = 0; 
@@ -55,21 +54,26 @@ void updateDirectionLEDs(Direction dir) {
 }
 
 // --- MAIN PROGRAMM ---
-/* ANFANG MAIN KOMMENTAR
 
 int main(void) {
     initITSboard();
+    GUI_init(DEFAULT_BRIGHTNESS);   // Initialisierung des LCD Boards mit Touch
+	TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
     initTimer();
     
 
 
     // 1. Start-Zustand Display
-    displayOutputs_clear();
+    //displayOutputs_clearError();
     displayOutputs_initialPrint();
 
     // 2. Synchronisierung der FSM
     Phase startPhase = inputs_newPhase();
-    fsm_init(startPhase);
+    //fsm_init(startPhase);
+    fsm_init(PHASE_A); // Wir starten immer in Phase A für Testzwecke
+
+    int sim_phase_counter=0; // Für Simulation der Phasenübergänge
+    const Phase simPattern[] = { PHASE_A, PHASE_B, PHASE_C, PHASE_D };
 
     // 3. Variablen für die Rechen-Logik
     uint32_t lastTimeTicks = getTimeStamp();
@@ -84,7 +88,14 @@ int main(void) {
         // TEIL A: Der "Fast Path"
         // ============================================================
         
-        Phase currentPhase = inputs_newPhase();
+        Phase currentPhase = simPattern[sim_phase_counter];
+
+        // Wir erhöhen den Zähler für den NÄCHSTEN Durchlauf
+        sim_phase_counter++;
+        if (sim_phase_counter > 3) {
+            sim_phase_counter = 0;
+        }
+        //Phase currentPhase = inputs_newPhase();
         
         // S6 Check (Reset)
         if (inputs_isS6Pressed()) {
@@ -101,8 +112,8 @@ int main(void) {
         if (fsm_isErrorState()) {           
             //Nur beim ERSTEN Eintritt in den Fehler tun wir was
             if (!errorWasActive) {
-                displayOutputs_clear();
-                displayOutputs_printError(); // Zeigt Fehlertext
+                //displayOutputs_clearError();
+                displayOutputs_printError(INVALID_PHASE_TRANSITION); // Zeigt Fehlertext
                 ledOutputs_setError();       // D21 an
                 
                 errorWasActive = true;       // Merken: Wir sind im Fehler
@@ -114,6 +125,7 @@ int main(void) {
 
             //Wenn wir gerade aus dem Fehler kommen
             if (errorWasActive) {
+                //displayOutputs_clearError();
                 displayOutputs_initialPrint(); // Layout wiederherstellen
                 ledOutputs_clearError();       // D21 aus
     
@@ -125,7 +137,9 @@ int main(void) {
 
             // 1. LEDs aktualisieren (Schnell)
             long steps = fsm_getStepCount();
-            ledOutputs_setStepCount((uint8_t)steps); // Binärzähler D8-D15
+            int positiveSteps = steps;
+            if (positiveSteps < 0) positiveSteps= -positiveSteps; // Vermeidung von Negativwerten für LEDs
+            ledOutputs_setStepCount((uint8_t)positiveSteps); // Binärzähler D8-D15
             
             Direction dir = fsm_getLastDirection();
             updateDirectionLEDs(dir); // D22/D23
@@ -170,31 +184,8 @@ int main(void) {
                 //if (displayBuffer[bufferReadIndex] == '\0') {
                     // Fertig gesendet
                 //}
+
+                HAL_Delay(50); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
             }
         }
-}
-
-
-ENDE MAIN KOMMENTAR*/
-// /* ANFANG TEST
-int main(void){
-
-    initITSboard();
-	GUI_init(DEFAULT_BRIGHTNESS);   // Initialisierung des LCD Boards mit Touch
-	TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
-
-    uint8_t counterr = 253;
-    displayOutputs_initialPrint();
-    while(1){
-        if(inputs_isS6Pressed()){
-            ledOutputs_setForward();
-            ledOutputs_setError();
-            ledOutputs_setBackward();
-        }
-        ledOutputs_clearBackward();
-        ledOutputs_clearForward();
-        ledOutputs_clearError();
-        ledOutputs_setStepCount(counterr);
     }
-}
-//    ENDE TEST*/
