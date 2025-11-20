@@ -34,7 +34,7 @@ void displayOutputs_initialPrint(void){
 }
 
 void displayOutputs_printAngle(double angle){
-    sprintf(angleBuffer, "%3.5f", angle);
+    sprintf(angleBuffer, "%.5f", angle);
     
     angleLength = strlen(angleBuffer);
     angleIndex = 0;
