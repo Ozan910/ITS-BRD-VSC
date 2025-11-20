@@ -22,13 +22,15 @@ static bool speedHasNext = false;
 
 void displayOutputs_initialPrint(void){
     lcdGotoXY(1,2);
-    lcdPrintlnS("Drehwinkel:");
+    lcdPrintlnS("Drehwinkel:\0");
     lcdGotoXY(1,3);
-    lcdPrintlnS("(in Grad)");
+    lcdPrintlnS("(in Grad)\0");
     lcdGotoXY(1,5);
-    lcdPrintlnS("Winkelgeschwindigkeit:");
+    lcdPrintlnS("Winkelgeschwindigkeit:\0");
     lcdGotoXY(1,6);
-    lcdPrintlnS("(in Grad / Sekunde)");
+    lcdPrintlnS("(in Grad / Sekunde)\0");
+    lcdGotoXY(1,8);
+    lcdPrintlnS("if an error occurrs, press S6 to reset\0");
 }
 
 void displayOutputs_printAngle(double angle){
@@ -48,13 +50,13 @@ void displayOutputs_printAngularSpeed(double speed){
 }
 
 void displayOutputs_printError(int errorCode){
-    lcdGotoXY(1,6);
-    lcdPrintlnS("Ein Fehler ist aufgetreten. Zum resetten: S6");
+    lcdGotoXY(18,11);
+    lcdPrintS("ERROR\0");
 }
 
 void displayOutputs_clearError(void){
-    lcdGotoXY(1,6);
-    lcdPrintS("                                             ");
+    lcdGotoXY(18,11);
+    lcdPrintS("     \0");
 }
 
 void displayOutputs_printNextChar(void){
@@ -62,7 +64,7 @@ void displayOutputs_printNextChar(void){
         if(angleIndex == 0){
             lcdGotoXY(X_ANGLE, Y_ANGLE);
         }
-
+        lcdGotoXY(X_ANGLE + angleIndex,Y_ANGLE);
         lcdPrintC(angleBuffer[angleIndex]);
         angleIndex++;
 
@@ -75,7 +77,7 @@ void displayOutputs_printNextChar(void){
         if(speedIndex == 0){
             lcdGotoXY(X_SPEED, Y_SPEED);
         }
-
+        lcdGotoXY(X_SPEED + speedIndex,Y_SPEED);
         lcdPrintC(speedBuffer[speedIndex]);
         speedIndex++;
 

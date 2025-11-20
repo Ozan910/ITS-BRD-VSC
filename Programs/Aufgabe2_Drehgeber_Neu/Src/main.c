@@ -33,7 +33,7 @@
 #include "timer.h"   
 
 // --- KONSTANTEN ---
-#define REFRESH_RATE_TICKS (250000 * TICKS_PER_US)
+#define REFRESH_RATE_TICKS (300000 * TICKS_PER_US)
 
 static bool errorWasActive = false; // Um den Zustandswechsel zu erkennen
 
@@ -66,37 +66,39 @@ int main(void) {
 
     // 2. Synchronisierung der FSM
     Phase startPhase = inputs_newPhase();
-    //fsm_init(startPhase);
-    fsm_init(PHASE_A); // Wir starten immer in Phase A für Testzwecke
+    fsm_init(startPhase);
+    // fsm_init(PHASE_A); // Wir starten immer in Phase A für Testzwecke
 
-    int sim_phase_counter=0; // Für Simulation der Phasenübergänge
-    const Phase simPattern[] = { PHASE_A, PHASE_B, PHASE_C, PHASE_D };
+    //int sim_phase_counter=0; // Für Simulation der Phasenübergänge
+    //const Phase simPattern[] = { PHASE_A, PHASE_B, PHASE_C, PHASE_D };
 
     // 3. Variablen für die Rechen-Logik
     uint32_t lastTimeTicks = getTimeStamp();
     long lastSteps = 0;
-
-
+    long lastTotalSteps = 0;
+    uint32_t currentTime;
+    Phase currentPhase;
+    bool isS6Pressed;
     // --- SUPER LOOP ---
     while (1) {
         // ============================================================
         // TEIL A: Der "Fast Path"
         // ============================================================
-        uint32_t currentTime = getTimeStamp();
-        Phase currentPhase = simPattern[sim_phase_counter];
+        currentTime = getTimeStamp();
 
+        currentPhase = inputs_newPhase();
+
+        isS6Pressed = inputs_isS6Pressed();
+
+        /*
+        //Phase currentPhase = simPattern[sim_phase_counter];
         // Wir erhöhen den Zähler für den NÄCHSTEN Durchlauf
         sim_phase_counter++;
         if (sim_phase_counter > 3) {
             sim_phase_counter = 0;
         }
-        //Phase currentPhase = inputs_newPhase();
+        */
         
-        // S6 Check (Reset)
-        if (inputs_isS6Pressed()) {
-             fsm_resetError(currentPhase);
-        }
-
         // FSM füttern
         fsm_update(currentPhase);
 
@@ -114,14 +116,17 @@ int main(void) {
                 errorWasActive = true;       // Merken: Wir sind im Fehler
             }
             // Wir warten effektiv, bis S6 gedrückt wird (oben im Loop).
+            if(isS6Pressed){
+             fsm_resetError(currentPhase);
+            }
 
         } else {
             // --- NORMALBETRIEB ---
 
             //Wenn wir gerade aus dem Fehler kommen
             if (errorWasActive) {
-                //displayOutputs_clearError();
-                displayOutputs_initialPrint(); // Layout wiederherstellen
+                displayOutputs_clearError();
+                //displayOutputs_initialPrint(); // Layout wiederherstellen
                 ledOutputs_clearError();       // D21 aus
     
                 lastSteps = fsm_getStepCount();
@@ -132,6 +137,7 @@ int main(void) {
 
             // 1. LEDs aktualisieren (Schnell)
             long steps = fsm_getStepCount();
+            long totalSteps = fsm_getTotalSteps();
             int positiveSteps = steps;
             if (positiveSteps < 0) positiveSteps= -positiveSteps; // Vermeidung von Negativwerten für LEDs
             ledOutputs_setStepCount((uint8_t)positiveSteps); // Binärzähler D8-D15
@@ -146,7 +152,7 @@ int main(void) {
             if (timeDelta >= REFRESH_RATE_TICKS) {
                 
                 // A) Delta berechnen
-                long stepDelta = steps - lastSteps;
+                long stepDelta = totalSteps - lastTotalSteps;
                 
                 // B) Mathematik
                 double angle = calcRotationalAngle(steps);
@@ -157,12 +163,12 @@ int main(void) {
                 displayOutputs_printAngularSpeed(speed);
 
                 // D) Referenzen aktualisieren
-                lastSteps = steps;
+                lastTotalSteps = totalSteps;
                 lastTimeTicks = currentTime;
             }
 
             displayOutputs_printNextChar();
-            HAL_Delay(0); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
+            //HAL_Delay(0); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
             }
         }
     }

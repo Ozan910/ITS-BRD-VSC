@@ -48,4 +48,9 @@ bool fsm_isErrorState(void);
  */
 void fsm_resetError(Phase currentPhase);
 
+/**
+* @brief returns total steps
+*/
+long fsm_getTotalSteps(void);
+
 #endif // FSM_H
