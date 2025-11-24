@@ -14,6 +14,7 @@ typedef enum {
 
 static FsmState currentState = STATE_A;   // Startannahme: Wir stehen in Phase A
 static long stepCounter = 0;              // Der Schrittzähler
+static long totalSteps = 0;
 static Direction lastDirection = DIR_NONE; // Letzte bekannte Richtung
 
 // --- HILFSFUNKTIONEN ---
@@ -50,11 +51,13 @@ void fsm_update(Phase newPhase) {
             if (newPhase == PHASE_B) {
                 // A -> B: Vorwärts
                 stepCounter++;
+                totalSteps++;
                 lastDirection = DIR_FORWARD;
                 currentState = STATE_B;
             } else if (newPhase == PHASE_D) {
                 // A -> D: Rückwärts (Zyklus: ... D -> A -> B ...)
                 stepCounter--;
+                totalSteps++;
                 lastDirection = DIR_BACKWARD;
                 currentState = STATE_D;
             } else if (newPhase == PHASE_C) {
@@ -68,11 +71,13 @@ void fsm_update(Phase newPhase) {
             if (newPhase == PHASE_C) {
                 // B -> C: Vorwärts 
                 stepCounter++;
+                totalSteps++;
                 lastDirection = DIR_FORWARD;
                 currentState = STATE_C;
             } else if (newPhase == PHASE_A) {
                 // B -> A: Rückwärts 
                 stepCounter--;
+                totalSteps++;
                 lastDirection = DIR_BACKWARD;
                 currentState = STATE_A;
             } else if (newPhase == PHASE_D) {
@@ -85,11 +90,13 @@ void fsm_update(Phase newPhase) {
             if (newPhase == PHASE_D) {
                 // C -> D: Vorwärts
                 stepCounter++;
+                totalSteps++;
                 lastDirection = DIR_FORWARD;
                 currentState = STATE_D;
             } else if (newPhase == PHASE_B) {
                 // C -> B: Rückwärts
                 stepCounter--;
+                totalSteps++;
                 lastDirection = DIR_BACKWARD;
                 currentState = STATE_B;
             } else if (newPhase == PHASE_A) {
@@ -102,11 +109,13 @@ void fsm_update(Phase newPhase) {
             if (newPhase == PHASE_A) {
                 // D -> A: Vorwärts
                 stepCounter++;
+                totalSteps++;
                 lastDirection = DIR_FORWARD;
                 currentState = STATE_A;
             } else if (newPhase == PHASE_C) {
                 // D -> C: Rückwärts
                 stepCounter--;
+                totalSteps++;
                 lastDirection = DIR_BACKWARD;
                 currentState = STATE_C;
             } else if (newPhase == PHASE_B) {
@@ -136,4 +145,8 @@ bool fsm_isErrorState(void) {
 
 void fsm_resetError(Phase currentPhase) {
     currentState = mapPhaseToState(currentPhase);
+}
+
+long fsm_getTotalSteps(void){
+    return totalSteps;
 }
