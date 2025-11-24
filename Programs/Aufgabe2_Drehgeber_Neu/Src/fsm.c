@@ -13,8 +13,8 @@ typedef enum {
 // --- STATISCHE VARIABLEN (ZUSTANDSSPEICHER) ---
 
 static FsmState currentState = STATE_A;   // Startannahme: Wir stehen in Phase A
-static long stepCounter = 0;              // Der Schrittzähler
-static long totalSteps = 0;
+static long stepCounter = 0;              // Der Schrittzähler für Winkelberechnung
+static long totalSteps = 0;               // Der Schrittzähler für Winkelgeschwindigkeit-berechnung
 static Direction lastDirection = DIR_NONE; // Letzte bekannte Richtung
 
 // --- HILFSFUNKTIONEN ---
