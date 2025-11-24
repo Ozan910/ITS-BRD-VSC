@@ -53,3 +53,5 @@ desktop.ini
 **/*.cbuild-idx.yml
 **/.clangd
 **/.cmsis/
+
+.vscode/settings.json
