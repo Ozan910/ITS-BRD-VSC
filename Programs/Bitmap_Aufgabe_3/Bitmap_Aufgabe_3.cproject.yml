@@ -186,6 +186,7 @@ project:
         - file: Inc/headers.h
         - file: Inc/input.h
         - file: Inc/MS_basetypes.h
+        - file: ../../DisplayWaveshare/Inc/LCD_GUI.h
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
