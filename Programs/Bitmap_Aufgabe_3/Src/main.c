@@ -57,16 +57,17 @@ int main(void) {
 		s0IsPressed = !(GPIOF->IDR & (1));
 		if(s0IsPressed){
 			//GUI_drawPoint(c, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
-			GUI_clear(WHITE);
-			openNextFile();
-			ERR_HANDLER(readHeaders()==NOK,"fehler");
-
+			GUI_clear(WHITE);//Bilschirm wird geleert
+			openNextFile();//nächste datei wird geöffnet
+			ERR_HANDLER(readHeaders()==NOK,"fehler");//funktioniert der header zugriff?
+			//initialisierung der header
 			BITMAPFILEHEADER fileheader;
 			BITMAPINFOHEADER infoheader;
-
+			//lesen und speichern der header in variablen
 			getFileHeader(&fileheader);
 			getInfoHeader(&infoheader);
 
+			//debug
 			lcdGotoXY(1,1);
 			lcdPrintlnS("Header gelesen!");
 
@@ -78,25 +79,27 @@ int main(void) {
 			lcdGotoXY(1, 3);
 			lcdPrintS(buf);
 
-			int rc = COMread( (char*)palette, sizeof(RGBQUAD), 256);
-			ERR_HANDLER(rc!=256, "palette failed");
+
+			//schreiben der nächsten 256 Byte (Farb palette) in den dafuer mit malloc reservierten speicher
+			int rc = COMread( (char*)palette, sizeof(RGBQUAD), 256);//palette (feld aus RGBQuad) wird auf char* gecastet weil das eingefordert wird von COMread
+			ERR_HANDLER(rc!=256, "palette failed");//wenn nicht genau 256 Byte gelesen wurden -> FEHLER!
 
 			
-			int pn = 0;
-			while(pn < 256){
+			int pn = 0;//paletten nummer
+			while(pn < 256){//test iteriert durch alle paletten farben durch, zeigt nummer, R, G, B an und einen 5x5 pixel in der Farbe nach dem umwandeln in 565
 				RGBQUAD test24 = palette[pn];
 				COLOR test565;
-				test565 = rgb24ToRgb565(test24);
+				test565 = rgb24ToRgb565(test24);//umwandeln von RGB24 zu RGB565
 
-				GUI_drawPoint(c, test565, DOT_PIXEL_5X5, DOT_FILL_AROUND);
+				GUI_drawPoint(c, test565, DOT_PIXEL_5X5, DOT_FILL_AROUND);//zeichnet den 5x5 Pixel
 				
-				snprintf(buf, sizeof(buf), "pn:%d R:%d G:%d B:%d", pn, test24.rgbRed, test24.rgbGreen, test24.rgbBlue);
+				snprintf(buf, sizeof(buf), "pn:%d R:%d G:%d B:%d", pn, test24.rgbRed, test24.rgbGreen, test24.rgbBlue);//infos zum Pixel
 				pn++;
 				lcdGotoXY(1,4);
 				lcdPrintS(buf);
 
-				while((GPIOF->IDR & 1));
-				HAL_Delay(100);
+				while((GPIOF->IDR & 1));//wartet auf Tasteneingabe S0 um zum nächsten pixel zu gehen
+				HAL_Delay(100);//kleiner delay, besser beim debuggen
 			}
 
 			lcdPrintlnS("FERTIG!");
