@@ -186,7 +186,9 @@ project:
         - file: Inc/headers.h
         - file: Inc/input.h
         - file: Inc/MS_basetypes.h
+        - file: Inc/helpers.h
         - file: ../../DisplayWaveshare/Inc/LCD_GUI.h
+        - file: ../../DisplayWaveshare/Inc/LCD_general.h
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
@@ -195,6 +197,7 @@ project:
         - file: Src/errorhandler.c
         - file: Src/headers.c
         - file: Src/input.c
+        - file: Src/helpers.c
 
   components:
     - component: ARM::CMSIS:CORE
