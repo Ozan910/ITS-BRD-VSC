@@ -28,33 +28,30 @@
 #include <stdlib.h>
 #include "helpers.h"
 
+#define XLCDSTART 0
+#define YLCDSTART 319
+
 int main(void) {
 	initITSboard();    // Initialisierung des ITS Boards
 	
 	GUI_init(DEFAULT_BRIGHTNESS);   // Initialisierung des LCD Boards mit Touch
 	TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
 
-
-
 	lcdPrintlnS("Waiting for connection...");
 	initInput();
 	GUI_clear(WHITE);
 	lcdPrintlnS("connected!");
+	lcdPrintlnS("start transmission");
+	lcdPrintlnS("Press S0 to start printing");
 
 	bool s0IsPressed;
-	POINT x = 10;
-	POINT y = 200;
-	Coordinate c;
-	c.x = x;
-	c.y = y;
-	
 	char buf[32];
 
 	RGBQUAD* palette = malloc(256 * sizeof(RGBQUAD));
 	ERR_HANDLER(palette == NULL, "malloc failed!");
 
 	while(1){
-		s0IsPressed = !(GPIOF->IDR & (1));
+		s0IsPressed = !(GPIOF->IDR & 1);
 		if(s0IsPressed){
 			//GUI_drawPoint(c, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
 			GUI_clear(WHITE);//Bilschirm wird geleert
@@ -67,42 +64,48 @@ int main(void) {
 			getFileHeader(&fileheader);
 			getInfoHeader(&infoheader);
 
-			//debug
-			lcdGotoXY(1,1);
-			lcdPrintlnS("Header gelesen!");
-
-			snprintf(buf, sizeof(buf), "width: %d", infoheader.biWidth);
-			lcdGotoXY(1, 2);
-			lcdPrintS(buf);
-
-			snprintf(buf, sizeof(buf), "height: %d", infoheader.biHeight);
-			lcdGotoXY(1, 3);
-			lcdPrintS(buf);
-
-
 			//schreiben der nächsten 256 Byte (Farb palette) in den dafuer mit malloc reservierten speicher
 			int rc = COMread( (char*)palette, sizeof(RGBQUAD), 256);//palette (feld aus RGBQuad) wird auf char* gecastet weil das eingefordert wird von COMread
 			ERR_HANDLER(rc!=256, "palette failed");//wenn nicht genau 256 Byte gelesen wurden -> FEHLER!
-
 			
-			int pn = 0;//paletten nummer
-			while(pn < 256){//test iteriert durch alle paletten farben durch, zeigt nummer, R, G, B an und einen 5x5 pixel in der Farbe nach dem umwandeln in 565
-				RGBQUAD test24 = palette[pn];
-				COLOR test565;
-				test565 = rgb24ToRgb565(test24);//umwandeln von RGB24 zu RGB565
+			Coordinate cord;
+			cord.x = XLCDSTART;
+			cord.y = YLCDSTART;
+			while(1){
+				uint8_t byte1 = nextChar();
+				uint8_t byte2 = nextChar();
 
-				GUI_drawPoint(c, test565, DOT_PIXEL_5X5, DOT_FILL_AROUND);//zeichnet den 5x5 Pixel
-				
-				snprintf(buf, sizeof(buf), "pn:%d R:%d G:%d B:%d", pn, test24.rgbRed, test24.rgbGreen, test24.rgbBlue);//infos zum Pixel
-				pn++;
-				lcdGotoXY(1,4);
-				lcdPrintS(buf);
+				if(byte1 == 0x00){//Escape Sonderfall oder Abosulute Codierung
+					if(byte2 == 0x00){//END OF LINE
+						cord.x = XLCDSTART;
+						cord.y--;
 
-				while((GPIOF->IDR & 1));//wartet auf Tasteneingabe S0 um zum nächsten pixel zu gehen
-				HAL_Delay(100);//kleiner delay, besser beim debuggen
+					}else if(byte2 == 0x01){//END OF MAP
+						break;
+
+					}else if(byte2 == 0x02){//MOVE CURSOR
+						uint8_t moveX = nextChar();
+						uint8_t moveY = nextChar();
+						cord.x += moveX;
+						cord.y -= moveY;
+
+					}else{//ABSOLUTE MODE
+						for(int i=0; i < byte2; i++){//anzahl der absoluten pixel
+							uint8_t pixel = nextChar();//jeden absoluten pixel einzeln holen
+							drawPixelWithPalette(palette, pixel, cord);//pixel als index für palette nutzen und printen
+							cord.x++;
+						}
+						if(byte2 & 1){//wenn anzahl der absoulten ungerade:
+							nextChar();//naechsten char ignorieren
+						}
+					}
+				}else{//ENCODED MODE
+					for(int i = 0; i < byte1; i++){
+						drawPixelWithPalette(palette, byte2, cord);
+						cord.x++;
+					}
+				}
 			}
-
-			lcdPrintlnS("FERTIG!");
 
 			HAL_Delay(10000);
 		}
