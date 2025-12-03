@@ -13,3 +13,10 @@ void drawPixelWithPalette(RGBQUAD* palette, uint8_t pixelIndex, Coordinate cord)
     uint16_t color565 = rgb24ToRgb565(color24);//in RGB 565 umwandeln für LCD
     GUI_drawPoint(cord, color565, DOT_PIXEL_1X1, DOT_FILL_AROUND);
 }
+
+void drawLine(RGBQUAD* palette, uint8_t* pixelLine, uint16_t* colorLine,uint32_t width, Coordinate cord){
+    for(uint32_t x = 0; x < width; x++){
+        colorLine[x] = rgb24ToRgb565(palette[pixelLine[x]]);
+    }
+    GUI_WriteLine(cord, width, colorLine);
+}

@@ -48,7 +48,7 @@ int main(void) {
 	char buf[32];
 
 	RGBQUAD* palette = malloc(256 * sizeof(RGBQUAD));
-	ERR_HANDLER(palette == NULL, "malloc failed!");
+	ERR_HANDLER(palette == NULL, "malloc palette failed!");
 
 	while(1){
 		s0IsPressed = !(GPIOF->IDR & 1);
@@ -71,6 +71,15 @@ int main(void) {
 			Coordinate cord;
 			cord.x = XLCDSTART;
 			cord.y = YLCDSTART;
+
+			//Speicher anlegen für pixelLine und colorLine weil variable Length
+			//uint8_t* pixelLine = malloc(infoheader.biWidth * sizeof(uint8_t));
+			//ERR_HANDLER(pixelLine == NULL, "malloc pixelLine failed!");
+			//uint16_t* colorLine = malloc(infoheader.biWidth * sizeof(uint16_t));
+			//ERR_HANDLER(colorLine == NULL, "malloc colorLine failed!");
+			uint8_t pixelLine[infoheader.biWidth];
+			uint16_t colorLine[infoheader.biWidth];
+
 			while(1){
 				uint8_t byte1 = nextChar();
 				uint8_t byte2 = nextChar();
@@ -78,6 +87,7 @@ int main(void) {
 				if(byte1 == 0x00){//Escape Sonderfall oder Abosulute Codierung
 					if(byte2 == 0x00){//END OF LINE
 						cord.x = XLCDSTART;
+						drawLine(palette, pixelLine, colorLine, infoheader.biWidth, cord);
 						cord.y--;
 
 					}else if(byte2 == 0x01){//END OF MAP
@@ -92,7 +102,8 @@ int main(void) {
 					}else{//ABSOLUTE MODE
 						for(int i=0; i < byte2; i++){//anzahl der absoluten pixel
 							uint8_t pixel = nextChar();//jeden absoluten pixel einzeln holen
-							drawPixelWithPalette(palette, pixel, cord);//pixel als index für palette nutzen und printen
+							//drawPixelWithPalette(palette, pixel, cord);//pixel als index für palette nutzen und printen
+							pixelLine[cord.x] = pixel;
 							cord.x++;
 						}
 						if(byte2 & 1){//wenn anzahl der absoulten ungerade:
@@ -101,11 +112,14 @@ int main(void) {
 					}
 				}else{//ENCODED MODE
 					for(int i = 0; i < byte1; i++){
-						drawPixelWithPalette(palette, byte2, cord);
+						//drawPixelWithPalette(palette, byte2, cord);
+						pixelLine[cord.x] = byte2;
 						cord.x++;
 					}
 				}
 			}
+			//free(pixelLine);
+			//free(colorLine);
 		}
 	}
 	free(palette);
