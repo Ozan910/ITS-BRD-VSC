@@ -1,0 +1,38 @@
++------------------------------+
+|          main.c              |  
+|------------------------------|
+| main()                       |
+| drawOriginalSize()           |
+| scaleAndPrint()              |
+| decodeNextLine()             |
++------------------------------+
+        |         |       |         |             |
+        v         v       v         v             v
++----------------+   +----------------+   +--------------------+
+|   headers.c    |   |   helpers.c    |   |   input.c          |
+|----------------|   |----------------|   |--------------------|
+| openNextFile() |   | drawLine()     |   | initInput()        |
+| readHeaders()  |   | rgb24ToRgb565()|   | (... low level ...)|
+| getFileHeader()|   +----------------+   +--------------------+
+| getInfoHeader()|
+| COMread()      |
+| nextChar()     |
++----------------+
+        |
+        v
++----------------------+
+|    BMP_types.h       |
+|----------------------|
+| BITMAPFILEHEADER     |
+| BITMAPINFOHEADER     |
+| RGBQUAD              |
++----------------------+
+
++----------------------+     +---------------------+
+|   LCD / GUI Libs     |     |  errorhandler.c     |
+|----------------------|     |---------------------|
+| GUI_init()           |     | ERR_HANDLER()       |
+| GUI_clear()          |     +---------------------+
+| GUI_WriteLine()      |
+| lcdPrintlnS()        |
++----------------------+

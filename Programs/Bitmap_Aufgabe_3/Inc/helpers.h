@@ -28,7 +28,7 @@ void drawPixelWithPalette(RGBQUAD* palette, uint8_t pixelIndex, Coordinate cord)
 *@param width number of pixels in a line
 *@param cord first pixel of the line
 * */
-void drawLine(RGBQUAD* palette, uint8_t* pixelLine, uint16_t* colorLine,uint32_t width, Coordinate cord);
+void drawLine(const RGBQUAD* palette, uint8_t* pixelLine, uint16_t* colorLine,uint32_t width, Coordinate cord);
 
 #endif
 //EOF

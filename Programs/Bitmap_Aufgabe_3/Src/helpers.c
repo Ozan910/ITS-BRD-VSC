@@ -14,7 +14,7 @@ void drawPixelWithPalette(RGBQUAD* palette, uint8_t pixelIndex, Coordinate cord)
     GUI_drawPoint(cord, color565, DOT_PIXEL_1X1, DOT_FILL_AROUND);
 }
 
-void drawLine(RGBQUAD* palette, uint8_t* pixelLine, uint16_t* colorLine,uint32_t width, Coordinate cord){
+void drawLine(const RGBQUAD* palette, uint8_t* pixelLine, uint16_t* colorLine,uint32_t width, Coordinate cord){
     for(uint32_t x = 0; x < width; x++){
         colorLine[x] = rgb24ToRgb565(palette[pixelLine[x]]);
     }

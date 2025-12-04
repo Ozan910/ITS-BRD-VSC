@@ -189,6 +189,7 @@ project:
         - file: Inc/helpers.h
         - file: ../../DisplayWaveshare/Inc/LCD_GUI.h
         - file: ../../DisplayWaveshare/Inc/LCD_general.h
+        - file: Inc/bmp_logic.h
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
@@ -198,6 +199,7 @@ project:
         - file: Src/headers.c
         - file: Src/input.c
         - file: Src/helpers.c
+        - file: Src/bmp_logic.c
 
   components:
     - component: ARM::CMSIS:CORE
