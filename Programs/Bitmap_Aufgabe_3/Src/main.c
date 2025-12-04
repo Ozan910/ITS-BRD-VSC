@@ -171,49 +171,7 @@ void scaleAndPrint(const BITMAPINFOHEADER* infoheader, const RGBQUAD* palette){
 			linesRead++;
 		}
 		if (linesRead == 0) break;
-
-		for(uint32_t x = 0; x < printWidth; x++){
-
-			uint32_t sumRed = 0;
-			uint32_t sumGreen = 0;
-			uint32_t sumBlue = 0;
-			uint32_t count = 0;
-
-			for(uint32_t y = 0; y < linesRead; y++){
-				for(uint32_t k = 0; k < scale; k++){
-
-					uint32_t indexX =  x * scale + k;
-					if(indexX >= infoheader->biWidth) break;
-
-					uint8_t pixelIndex = buffer[y][indexX];
-					RGBQUAD col = palette[pixelIndex];
-
-					sumRed += col.rgbRed;
-					sumGreen += col.rgbGreen;
-					sumBlue += col.rgbBlue;
-					count++;
-				}
-			}
-			if(count == 0){
-				colorLine[x] = 0;
-			} else {
-				RGBQUAD col;
-				col.rgbRed = sumRed / count;
-				col.rgbGreen = sumGreen / count;
-				col.rgbBlue = sumBlue / count;
-				colorLine[x] = rgb24ToRgb565(col);
-			}
-			
-		}
-
-		cord.x = XLCDSTART;
-		GUI_WriteLine(cord, printWidth, colorLine);
-		cord.y--;
-
-		if(linesRead < scale){
-			break;
-		}
-	
+		
 	}
 }
 

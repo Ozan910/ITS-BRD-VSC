@@ -33,7 +33,8 @@
 #include "timer.h"   
 
 // --- KONSTANTEN ---
-#define REFRESH_RATE_TICKS (300000 * TICKS_PER_US)
+#define REFRESH_RATE_TICKS (250000 * TICKS_PER_US)
+#define MAXREFRESH_RATE_TICKS (500000 * TICKS_PER_US)
 
 static bool errorWasActive = false; // Um den Zustandswechsel zu erkennen
 
@@ -78,6 +79,7 @@ int main(void) {
     long lastTotalSteps = 0;
     uint32_t currentTime;
     Phase currentPhase;
+    Phase lastPhase = inputs_newPhase();
     bool isS6Pressed;
     // --- SUPER LOOP ---
     while (1) {
@@ -149,7 +151,7 @@ int main(void) {
 
             uint32_t timeDelta = currentTime - lastTimeTicks; 
 
-            if (timeDelta >= REFRESH_RATE_TICKS) {
+            if ((timeDelta >= REFRESH_RATE_TICKS && currentPhase != lastPhase) || timeDelta >= MAXREFRESH_RATE_TICKS)  {
                 
                 // A) Delta berechnen
                 long stepDelta = totalSteps - lastTotalSteps;
@@ -165,9 +167,12 @@ int main(void) {
                 // D) Referenzen aktualisieren
                 lastTotalSteps = totalSteps;
                 lastTimeTicks = currentTime;
+                
             }
-
+            lastPhase = currentPhase;
+            GPIOE->BSRR = (1 << 4);
             displayOutputs_printNextChar();
+            GPIOE->BSRR = (1 << (4 + 16));
             //HAL_Delay(0); // Kleine Verzögerung, um die Ausgabe zu entzerren für Testzwecke
             }
         }
