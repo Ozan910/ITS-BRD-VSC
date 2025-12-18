@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    main.c
-  * @author  Franz Korf
-  * @brief   Kleines Testprogramm fuer neu erstelle Fonts.
+  * @author  Franz Korf / Ozan / [Dein Name]
+  * @brief   Hauptprogramm für BMP Viewer
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
@@ -36,13 +36,26 @@
 #define XLCDSTART 0
 #define YLCDSTART 319
 
-int main(void) {
-	initITSboard();    // Initialisierung des ITS Boards
-	
-	GUI_init(DEFAULT_BRIGHTNESS);   // Initialisierung des LCD Boards mit Touch
-	TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
+// Vorwärtsdeklarationen
+void drawOriginalSize(const BITMAPINFOHEADER* infoheader, const RGBQUAD* palette);
+void scaleAndPrint(const BITMAPINFOHEADER* infoheader, const RGBQUAD* palette);
+bool decodeNextLine(const BITMAPINFOHEADER* infoheader, uint8_t* pixelLine, Coordinate* cord);
 
-	lcdPrintlnS("Waiting for connection...");
+// Globale Puffer (static, um Stack zu schonen)
+// Wir brauchen maximal 5 Zeilen Puffer für die Eingabe
+static uint8_t inputBuffer[5][2400]; // Max Breite 2400
+// Puffer für das Dekodieren einer einzelnen Zeile
+static uint8_t tempLine[2400];
+// Ausgabepuffer für eine Displayzeile (Farben)
+static uint16_t outputLine[480]; 
+
+int main(void) {
+	initITSboard();    
+	
+	GUI_init(DEFAULT_BRIGHTNESS);   
+	TP_Init(false);                 
+
+	lcdPrintlnS("Waiting for connection....");
 	initInput();
 	GUI_clear(WHITE);
 	lcdPrintlnS("connected!");
@@ -58,20 +71,35 @@ int main(void) {
 	while(1){
 		s0IsPressed = !(GPIOF->IDR & 1);
 		if(s0IsPressed){
-			//GUI_drawPoint(c, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
-			GUI_clear(WHITE);//Bilschirm wird geleert
-			openNextFile();//nächste datei wird geöffnet
-			ERR_HANDLER(readHeaders()==NOK,"fehler");//funktioniert der header zugriff?
-			//initialisierung der header
+			GUI_clear(WHITE);
+			openNextFile();
+			ERR_HANDLER(readHeaders()==NOK,"fehler");
+			
 			BITMAPFILEHEADER fileheader;
 			BITMAPINFOHEADER infoheader;
-			//lesen und speichern der header in variablen
 			getFileHeader(&fileheader);
 			getInfoHeader(&infoheader);
 
-			//schreiben der nächsten 256 Byte (Farb palette) in den dafuer mit malloc reservierten speicher
-			int rc = COMread( (char*)palette, sizeof(RGBQUAD), 256);//palette (feld aus RGBQuad) wird auf char* gecastet weil das eingefordert wird von COMread
-			ERR_HANDLER(rc!=256, "palette failed");//wenn nicht genau 256 Byte gelesen wurden -> FEHLER!
+			// --- FIX 1: Palettengröße ---
+			int colorsToRead = infoheader.biClrUsed;
+			if (colorsToRead == 0 && infoheader.biBitCount <= 8) {
+				colorsToRead = (1 << infoheader.biBitCount); 
+			}
+			if (colorsToRead > 256) colorsToRead = 256;
+
+			int rc = COMread( (char*)palette, sizeof(RGBQUAD), colorsToRead);
+			ERR_HANDLER(rc!=colorsToRead, "palette failed");
+
+			// --- FIX 2: Gap Skipping ---
+			long bytesReadSoFar = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + (colorsToRead * sizeof(RGBQUAD));
+			long pixelStartOffset = fileheader.bfOffBits;
+			long gap = pixelStartOffset - bytesReadSoFar;
+
+			if (gap > 0) {
+				for (long i = 0; i < gap; i++) {
+					nextChar(); 
+				}
+			}
 
 			if((infoheader.biWidth <= 480) && (infoheader.biHeight <= 320)){
 				drawOriginalSize(&infoheader, palette);
@@ -89,16 +117,31 @@ int main(void) {
 void drawOriginalSize(const BITMAPINFOHEADER* infoheader, const RGBQUAD* palette){
 	Coordinate cord;
 	cord.x = XLCDSTART;
-	cord.y = YLCDSTART;
+	cord.y = YLCDSTART; 
 
-	uint8_t pixelLine[infoheader->biWidth];
-	uint16_t colorLine[infoheader->biWidth];
+	// Wir nutzen hier direkt den globalen Puffer 'tempLine', spart Stack
+    // tempLine ist oben als static definiert
 
-	while(decodeNextLine(infoheader, pixelLine, &cord)){
-		cord.x = XLCDSTART;
-		drawLine(palette, pixelLine, colorLine, infoheader->biWidth, cord);
-		cord.y--;
-	}
+    while(1) {
+        cord.x = XLCDSTART;
+        bool hasMoreLines = decodeNextLine(infoheader, tempLine, &cord);
+        
+        if (cord.x > XLCDSTART) {
+            cord.x = XLCDSTART; 
+            // Direktes Zeichnen der dekodierten Zeile
+            for(int i=0; i<infoheader->biWidth; i++) {
+                 RGBQUAD c = palette[tempLine[i]];
+                 uint16_t color565 = rgb24ToRgb565(c);
+                 // Ausgabe in den Output-Buffer für GUI_WriteLine (schneller)
+                 if(i < 480) outputLine[i] = color565;
+            }
+            // Zeile ausgeben
+            GUI_WriteLine((Coordinate){0, cord.y}, infoheader->biWidth, outputLine);
+            cord.y--; 
+        }
+        
+        if (!hasMoreLines) break;
+    }
 }
 
 bool decodeNextLine(const BITMAPINFOHEADER* infoheader, uint8_t* pixelLine, Coordinate* cord){
@@ -106,10 +149,9 @@ bool decodeNextLine(const BITMAPINFOHEADER* infoheader, uint8_t* pixelLine, Coor
 		uint8_t byte1 = nextChar();
 		uint8_t byte2 = nextChar();
 
-		if(byte1 == 0x00){//Escape Sonderfall oder Abosulute Codierung
+		if(byte1 == 0x00){//Escape
 			if(byte2 == 0x00){//END OF LINE
 				return true;
-
 
 			}else if(byte2 == 0x01){//END OF MAP
 				return false;
@@ -121,59 +163,123 @@ bool decodeNextLine(const BITMAPINFOHEADER* infoheader, uint8_t* pixelLine, Coor
 				cord->y -= moveY;
 
 			}else{//ABSOLUTE MODE
-				for(int i=0; i < byte2; i++){//anzahl der absoluten pixel
-					uint8_t pixel = nextChar();//jeden absoluten pixel einzeln holen
-					//drawPixelWithPalette(palette, pixel, cord);//pixel als index für palette nutzen und printen
-					pixelLine[cord->x] = pixel;
-					cord->x++;
+				for(int i=0; i < byte2; i++){
+					uint8_t pixel = nextChar();
+                    if (cord->x < infoheader->biWidth) {
+					    pixelLine[cord->x] = pixel;
+					    cord->x++;
+                    }
 				}
-				if(byte2 & 1){//wenn anzahl der absoulten ungerade:
-					nextChar();//naechsten char ignorieren
+				if(byte2 & 1){
+					nextChar();
 				}
 			}
 		}else{//ENCODED MODE
 			for(int i = 0; i < byte1; i++){
-				//drawPixelWithPalette(palette, byte2, cord);
-				pixelLine[cord->x] = byte2;
-				cord->x++;
+                if (cord->x < infoheader->biWidth) {
+				    pixelLine[cord->x] = byte2;
+				    cord->x++;
+                }
 			}
 		}
 	}
 }
 
 void scaleAndPrint(const BITMAPINFOHEADER* infoheader, const RGBQUAD* palette){
-	float factorX = (float)LCDWIDTH / (float)infoheader->biWidth;
-	float factorY = (float)LCDHEIGHT / (float)infoheader->biHeight;
-	float factor = factorX < factorY ? factorX : factorY;
-	factor = 1.0f/factor;
+    // 1. Skalierungsfaktor berechnen
+	float factorX = (float)infoheader->biWidth / (float)LCDWIDTH;
+	float factorY = (float)infoheader->biHeight / (float)LCDHEIGHT;
+    
+    // Nimm den größeren Faktor (Runterskalieren)
+	float factor = factorX > factorY ? factorX : factorY;
+    
+    // Mindestens 1.0
+    if (factor < 1.0f) factor = 1.0f; 
+    
+    // Cast auf Integer für den Box-Algorithmus (Kantenlänge der Box)
 	uint32_t scale = (uint32_t)factor;
-	if(scale < factor) scale++;
+    // Einfache Rundung: Wenn wir knapp drüber sind (z.B. 2.1), nimm lieber 3
+    if ((float)scale < factor) scale++;
+    
 	if(scale < 1) scale = 1;
 	if(scale > 5) scale = 5;
 
-
+    // Breite des skalierten Bildes auf dem LCD
 	uint32_t printWidth = infoheader->biWidth / scale;
+    if (printWidth > LCDWIDTH) printWidth = LCDWIDTH;
+
 	Coordinate cord;
 	cord.x = XLCDSTART;
-	cord.y = YLCDSTART;
-	uint8_t pixelLine[infoheader->biWidth];
-	uint16_t colorLine[printWidth];
-	uint8_t buffer[5][infoheader->biWidth];
-
-	while(1){
+	cord.y = YLCDSTART; // Wir starten unten und malen hoch (Bottom-Up)
+	
+    // static Buffer (oben definiert) nutzen wir hier
+	bool finishedReading = false;
+	while(!finishedReading){
 		uint32_t linesRead = 0;
 
+        // --- SCHRITT 1: Lese 'scale' Zeilen in den Puffer ---
 		for(int i = 0; i < scale; i++){
 			cord.x = XLCDSTART;
-			bool ok = decodeNextLine(infoheader, pixelLine, &cord);
-			if(!ok) break;
-			memcpy(buffer[i], pixelLine, infoheader->biWidth * sizeof(uint8_t));
-			linesRead++;
+			bool ok = decodeNextLine(infoheader, tempLine, &cord);
+			
+            // Kopiere tempLine in den inputBuffer an Position i
+            // inputBuffer[i] ist eine Zeile der Box
+			memcpy(inputBuffer[i], tempLine, infoheader->biWidth * sizeof(uint8_t));
+			
+            linesRead++;
+            if(!ok) break; // Datei zu Ende oder Bild zu Ende
 		}
-		if (linesRead == 0) break;
 		
+        if (linesRead == 0) break; // Nichts mehr gelesen -> Fertig
+
+		// --- SCHRITT 2: Box-Algorithmus (Verrechnen) ---
+        // Wir gehen jeden Pixel der ZIEL-Zeile durch
+        for(int lcdX = 0; lcdX < printWidth; lcdX++) {
+            
+            long r_sum = 0, g_sum = 0, b_sum = 0;
+            int count = 0;
+
+            // Berechne den Bereich im Quellbild (Box X-Koordinaten)
+            int startX = lcdX * scale;
+            int endX = startX + scale;
+            if (endX > infoheader->biWidth) endX = infoheader->biWidth;
+
+            // Iteriere über die geladenen Zeilen (Y)
+            for(int y = 0; y < linesRead; y++) {
+                // Iteriere über die Pixel der Zeile (X)
+                for(int x = startX; x < endX; x++) {
+                    uint8_t index = inputBuffer[y][x];
+                    RGBQUAD c = palette[index];
+                    
+                    r_sum += c.rgbRed;
+                    g_sum += c.rgbGreen;
+                    b_sum += c.rgbBlue;
+                    count++;
+                }
+            }
+
+            // Durchschnitt berechnen
+            if (count > 0) {
+                RGBQUAD avg;
+                avg.rgbRed = r_sum / count;
+                avg.rgbGreen = g_sum / count;
+                avg.rgbBlue = b_sum / count;
+                
+                // In 565 konvertieren und in Ausgabepuffer schreiben
+                outputLine[lcdX] = rgb24ToRgb565(avg);
+            } else {
+                outputLine[lcdX] = 0; // Schwarz
+            }
+        }
+
+        // --- SCHRITT 3: Zeile ausgeben ---
+        // Wir nutzen GUI_WriteLine für Geschwindigkeit (Aufgabe B)
+        GUI_WriteLine((Coordinate){0, cord.y}, printWidth, outputLine);
+        
+        // Eine Zeile auf dem Display weiter nach oben
+        cord.y--;
+
+		if (cord.y < 0) finishedReading = true;
 	}
 }
-
-
 // EOF
