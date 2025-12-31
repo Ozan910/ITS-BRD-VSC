@@ -7,8 +7,9 @@
  ******************************************************************
 */
 
+#include "base_functions.h"
 #include "myTimer.h"
-#define PINNR 0
+#include "stm32f4xx.h"
 
 void sendBit1(void){
     GPIOD->BSRR = (1U << (PINNR + 16));//bus low
@@ -60,3 +61,35 @@ void sendByte(uint8_t byte){
         byte = byte >> 1;//byte wird um 1 nach rechts verschoben > nächstes LSB rückt nach
     }
 }
+
+void powerSupply750ms(void){
+    GPIOD->OTYPER &= ~(1U << PINNR);//IO-Port auf push-pull
+    GPIOD->BSRR = (1U << PINNR);//IO-Port auf High schalten
+
+    mySleep(750000);//750ms warten
+
+    GPIOD->OTYPER |= (1U << PINNR);//IO-Port auf open-drain
+}
+
+ROM_Number receiveSingleROM(void){//ROM kommt LSB -> MSB
+    ROM_Number rom;
+    rom.family = readByte();//erste 8 Bit die gelesen werden family code
+    for (int i = 0; i < 6; i++){
+        rom.serial[i] = readByte();//nächste 48 Bit serial number
+    }
+    rom.crc = readByte();//letzte 8 Bit sind CRC
+    
+    return rom;
+}
+
+void init1WireBus(void){
+    GPIOD->MODER = (GPIOD->MODER & ~MODER_MASK_PIN_1) | OUTPUT_MASK_PIN_1;//setting MODER of GPIOD Pin 1 to Output
+    GPIOD->OTYPER &= ~(1U << 1);//setting OTYPER of GPIOD Pin 1 to Push-Pull mode
+    GPIOD->BSRR = (1U << 1);//setting IO Port Pin 1 GPIOD on high
+
+    GPIOD->MODER = (GPIOD->MODER & ~MODER_MASK_PIN_0) | OUTPUT_MASK_PIN_0;//setting MODER of GPIOD Pin 0 to Output
+    GPIOD->OTYPER |= (1U << PINNR);//setting OTYPER of GPIOD Pin 0 to Open-Drain mode
+    GPIOD->BSRR = (1U << PINNR);//sets the bus on high (through pull up)
+}
+
+bool checkROMCRC(ROM_Number *rom);
