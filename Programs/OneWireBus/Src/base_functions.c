@@ -10,6 +10,7 @@
 #include "base_functions.h"
 #include "myTimer.h"
 #include "stm32f4xx.h"
+#include "crc.h"
 
 void sendBit1(void){
     GPIOD->BSRR = (1U << (PINNR + 16));//bus low
@@ -92,4 +93,13 @@ void init1WireBus(void){
     GPIOD->BSRR = (1U << PINNR);//sets the bus on high (through pull up)
 }
 
-bool checkROMCRC(ROM_Number *rom);
+bool checkROMCRC(ROM_Number *rom){
+    unsigned char arr[8];
+    arr[0] = rom->  family;
+    for(int i = 0; i < 6; i++){
+        arr[1+i] = rom->serial[i];
+    }
+    arr[7] = rom->crc;
+
+    return checkCRC(8, arr);
+}

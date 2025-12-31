@@ -41,9 +41,16 @@ int main(void) {
 			continue;
 		}
 
-		sendByte(0x33);
+		sendByte(0x33);//sende befehl für Read Rom [33h]
 		ROM_Number rom;
 		rom = receiveSingleROM();
+
+		bool ok = checkROMCRC(&rom);
+		if(ok){
+			lcdPrintlnS("CRC valid");
+		}else{
+			lcdPrintlnS("invalid CRC");
+		}
 
 		char buf[40];
 		snprintf(buf, sizeof(buf), "%02X-%02X%02X%02X%02X%02X%02X-%02X", rom.family, rom.serial[0], rom.serial[1], rom.serial[2], rom.serial[3], rom.serial[4], rom.serial[5], rom.crc);
