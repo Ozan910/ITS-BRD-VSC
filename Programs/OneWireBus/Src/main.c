@@ -16,6 +16,8 @@
 #include "additionalFonts.h"
 #include "error.h"
 #include "timer.h"
+#include "myTimer.h"
+#include "base_functions.h"S
 
 
 int main(void) {
@@ -24,12 +26,13 @@ int main(void) {
 	GUI_init(DEFAULT_BRIGHTNESS);   // Initialisierung des LCD Boards mit Touch
 	TP_Init(false);                 // Initialisierung des LCD Boards mit Touch
 
-  // Begruessungstext	
 	lcdPrintlnS("Hallo liebes TI-Labor (c-project)");
-	
+	initTimer();
+
 	// Test in Endlosschleife
 	while(1) {
-		HAL_Delay(10000);
+		lcdPrintlnS("a");
+		mySleep(10000000); 
 	}
 }
 

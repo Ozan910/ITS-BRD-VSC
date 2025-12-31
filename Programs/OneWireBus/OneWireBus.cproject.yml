@@ -173,6 +173,9 @@ project:
       files:
         - file: ../../ITS_BRD_LIB/Inc/lcd.h
         - file: Inc/crc.h
+        - file: ../../ITS_BRD_LIB/Inc/timer.h
+        - file: Inc/base_functions.h
+        - file: Inc/myTimer.h
 
 
     # Benutzerdefinierte Programmdateien
@@ -180,6 +183,8 @@ project:
       files:
         - file: Src/main.c
         - file: Src/crc.c
+        - file: Src/myTimer.c
+        - file: Src/base_functions.c
 
 
   components:
