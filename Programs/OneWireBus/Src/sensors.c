@@ -40,3 +40,7 @@ char* getSensorTypeString(SensorType sensorType, char *stringBuffer){
     return stringBuffer;
 }
 
+float getFloatTemp(int16_t intTemp){
+    return (intTemp / 16.0f);
+}
+

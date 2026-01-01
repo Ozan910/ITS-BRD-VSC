@@ -35,7 +35,7 @@ bool checkROMCRC(ROM_Number *rom);
 * @param rom pointer on the Scratchpad struct that will be checked
 * @return true if the crc ist valid, false if not
 */
-bool checkScratchCRC(Scratchpad scratchpad);
+bool checkScratchCRC(Scratchpad *scratchpad);
 
 #endif // _CRC_H
 // EOF

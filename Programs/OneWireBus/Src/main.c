@@ -45,7 +45,7 @@ int main(void) {
 
 		sendByte(0x33);//sende befehl für Read Rom [33h]
 		ROM_Number rom;
-		rom = receiveSingleROM();
+		receiveSingleROM(&rom);
 
 		bool ok = checkROMCRC(&rom);
 		if(ok){

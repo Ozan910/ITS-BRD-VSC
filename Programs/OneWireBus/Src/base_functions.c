@@ -95,7 +95,7 @@ void receiveScratchpad(Scratchpad *scratchpad){
     uint8_t tempMSB = readByte();
     scratchpad->temperature = (int16_t) ( ( ((uint16_t)tempMSB) << 8 ) | tempLSB );
     
-    scratchpad->thRegister = readByte();
+    scratchpad->tHRegister = readByte();
     scratchpad->tLRegister = readByte();
     scratchpad->configRegister = readByte();
     scratchpad->reserved1 = readByte();

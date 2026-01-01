@@ -74,6 +74,6 @@ void receiveSingleROM(ROM_Number *rom);
 * @brief receives the 9 Byte Scratchpad of a sensor
 * @param scratchpad pointer on the scratchpad struct where the received data is written
 */
-void receiveScratchopad(Scratchpad *scratchpad);
+void receiveScratchpad(Scratchpad *scratchpad);
 #endif
 //EOF

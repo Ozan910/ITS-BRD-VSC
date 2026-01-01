@@ -38,7 +38,7 @@ bool checkROMCRC(ROM_Number *rom){
     return checkCRC(8, arr);
 }
 
-bool checkScratchCRC(Scratchpad scratchpad){
+bool checkScratchCRC(Scratchpad *scratchpad){
    unsigned char arr[9];
    uint16_t temp = scratchpad->temperature;
    uint8_t tempLSB = (uint8_t)(temp & 0xFF);
