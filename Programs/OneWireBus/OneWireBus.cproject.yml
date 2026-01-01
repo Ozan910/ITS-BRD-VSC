@@ -177,6 +177,7 @@ project:
         - file: Inc/base_functions.h
         - file: Inc/myTimer.h
         - file: Inc/sensors.h
+        - file: Inc/myList.h
 
 
     # Benutzerdefinierte Programmdateien
@@ -187,6 +188,7 @@ project:
         - file: Src/myTimer.c
         - file: Src/base_functions.c
         - file: Src/sensors.c
+        - file: Src/myList.c
 
 
   components:

@@ -22,6 +22,13 @@
 #include "crc.h"
 #include "sensors.h"
 
+#define SEARCH_ROM 		0xF0
+#define READ_ROM 		0x33
+#define MATCH_ROM 		0x55
+#define SKIP_ROM 		0xCC
+#define CONVERT_T		0x44
+#define READ_SCRATCHPAD 0xBE
+
 
 int main(void) {
 	initITSboard();    // Initialisierung des ITS Boards
@@ -34,21 +41,17 @@ int main(void) {
 	// Inits für Bus
 	init1WireBus();
 	while(1) {
-		int rc;
-		rc = sendReset();
-
-		if(!rc){
+		if(!sendReset()){
 			lcdPrintlnS("Pulse Detected");
 		} else {
 			continue;
 		}
 
-		sendByte(0x33);//sende befehl für Read Rom [33h]
+		sendByte(READ_ROM);//sende befehl für Read Rom [33h]
 		ROM_Number rom;
 		receiveSingleROM(&rom);
 
-		bool ok = checkROMCRC(&rom);
-		if(ok){
+		if(checkROMCRC(&rom)){
 			lcdPrintlnS("CRC valid");
 		}else{
 			lcdPrintlnS("invalid CRC");
@@ -59,6 +62,31 @@ int main(void) {
 
 		lcdPrintlnS(buf);
 
+		if(!sendReset()){
+			lcdPrintlnS("Pulse Detected");
+		} else {
+			continue;
+		}
+		sendByte(SKIP_ROM);
+		sendByte(CONVERT_T);
+		powerSupply750ms();
+
+		if(!sendReset()){
+				lcdPrintlnS("Pulse Detected");
+			} else {
+				continue;
+			}
+		sendByte(SKIP_ROM);
+		sendByte(READ_SCRATCHPAD);
+		Scratchpad scratchpad;
+		receiveScratchpad(&scratchpad);
+		float temp = getFloatTemp(scratchpad.temperature);
+		snprintf(buf, sizeof(buf), "Temperature: %f", temp);
+		lcdPrintlnS(buf);
+
+		mySleep(10000000);
+		mySleep(10000000);
+		mySleep(10000000);
 		mySleep(10000000);
 	}
 }

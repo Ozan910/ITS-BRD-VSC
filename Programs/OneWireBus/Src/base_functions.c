@@ -93,7 +93,7 @@ void receiveSingleROM(ROM_Number *rom){//ROM kommt LSB -> MSB
 void receiveScratchpad(Scratchpad *scratchpad){
     uint8_t tempLSB = readByte();
     uint8_t tempMSB = readByte();
-    scratchpad->temperature = (int16_t) ( ( ((uint16_t)tempMSB) << 8 ) | tempLSB );
+    scratchpad->temperature = (int16_t) ( ( ((uint16_t)tempMSB) << 8 ) | tempLSB );//2 temp Bytes werden in 1 signed 16 Bit int verwandelt
     
     scratchpad->tHRegister = readByte();
     scratchpad->tLRegister = readByte();
