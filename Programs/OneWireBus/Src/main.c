@@ -19,6 +19,8 @@
 #include "myTimer.h"
 #include "base_functions.h"
 #include <stdio.h>
+#include "crc.h"
+#include "sensors.h"
 
 
 int main(void) {
@@ -52,7 +54,7 @@ int main(void) {
 			lcdPrintlnS("invalid CRC");
 		}
 
-		char buf[40];
+		char buf[50];
 		snprintf(buf, sizeof(buf), "%02X-%02X%02X%02X%02X%02X%02X-%02X", rom.family, rom.serial[0], rom.serial[1], rom.serial[2], rom.serial[3], rom.serial[4], rom.serial[5], rom.crc);
 
 		lcdPrintlnS(buf);

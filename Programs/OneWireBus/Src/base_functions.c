@@ -1,6 +1,6 @@
 /**
  ******************************************************************
-  * @file base_functions.h
+  * @file base_functions.c
   * @author Ozan
   * @date December 2025
   * @brief Dieses Modul implementiert die Basis Funktionen für den One Wire Bus. NUR IM OPEN-DRAIN MODE BENUTZEN!!!
@@ -10,7 +10,6 @@
 #include "base_functions.h"
 #include "myTimer.h"
 #include "stm32f4xx.h"
-#include "crc.h"
 
 void sendBit1(void){
     GPIOD->BSRR = (1U << (PINNR + 16));//bus low
@@ -72,16 +71,6 @@ void powerSupply750ms(void){
     GPIOD->OTYPER |= (1U << PINNR);//IO-Port auf open-drain
 }
 
-ROM_Number receiveSingleROM(void){//ROM kommt LSB -> MSB
-    ROM_Number rom;
-    rom.family = readByte();//erste 8 Bit die gelesen werden family code
-    for (int i = 0; i < 6; i++){
-        rom.serial[i] = readByte();//nächste 48 Bit serial number
-    }
-    rom.crc = readByte();//letzte 8 Bit sind CRC
-    
-    return rom;
-}
 
 void init1WireBus(void){
     GPIOD->MODER = (GPIOD->MODER & ~MODER_MASK_PIN_1) | OUTPUT_MASK_PIN_1;//setting MODER of GPIOD Pin 1 to Output
@@ -93,13 +82,24 @@ void init1WireBus(void){
     GPIOD->BSRR = (1U << PINNR);//sets the bus on high (through pull up)
 }
 
-bool checkROMCRC(ROM_Number *rom){
-    unsigned char arr[8];
-    arr[0] = rom->  family;
-    for(int i = 0; i < 6; i++){
-        arr[1+i] = rom->serial[i];
+void receiveSingleROM(ROM_Number *rom){//ROM kommt LSB -> MSB
+    rom->family = readByte();//erste 8 Bit die gelesen werden family code
+    for (int i = 0; i < 6; i++){
+        rom->serial[i] = readByte();//nächste 48 Bit serial number
     }
-    arr[7] = rom->crc;
+    rom->crc = readByte();//letzte 8 Bit sind CRC
+}
 
-    return checkCRC(8, arr);
+void receiveScratchpad(Scratchpad *scratchpad){
+    uint8_t tempLSB = readByte();
+    uint8_t tempMSB = readByte();
+    scratchpad->temperature = (int16_t) ( ( ((uint16_t)tempMSB) << 8 ) | tempLSB );
+    
+    scratchpad->thRegister = readByte();
+    scratchpad->tLRegister = readByte();
+    scratchpad->configRegister = readByte();
+    scratchpad->reserved1 = readByte();
+    scratchpad->reserved2 = readByte();
+    scratchpad->reserved3 = readByte();
+    scratchpad->crc = readByte();
 }

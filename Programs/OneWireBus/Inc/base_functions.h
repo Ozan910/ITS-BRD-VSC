@@ -11,8 +11,7 @@
 #define BASE_FUNCTIONS_H
 
 #include <stdint.h>
-#include <stdbool.h>
-
+#include "sensors.h"
 
 #define PINNR 0
 //PINNR HAS TO BE 0!!!
@@ -20,12 +19,6 @@
 #define OUTPUT_MASK_PIN_0 (0x01U << (2 * 0))
 #define MODER_MASK_PIN_1 (0x03U << (2 * 1))
 #define OUTPUT_MASK_PIN_1 (0x01U << (2* 1))
-
-typedef struct {
-    uint8_t family;//8 Bit Family Code
-    uint8_t serial[6];//48 Bit Serial Number (unique)
-    uint8_t crc;//8 bit CRC
-} ROM_Number;
 
 /**
 * @brief sends a 1 to the bus
@@ -67,22 +60,20 @@ void sendByte(uint8_t byte);
 void powerSupply750ms(void);
 
 /**
-* @brief receives the 64 Bit ROM of a single sensor
-* @return returns a ROM_Number struct containing the family code, serial number and crc of the ROM received
-*/
-ROM_Number receiveSingleROM(void);
-
-/**
 * @brief initiates the Pins for the 1 Wire Bus by Setting PD1 to MODER Output, OTYPER push-pull mode and on HIGH and by Setting PD0 to MODER Output, OTYPER open-drain mode.
 */
 void init1WireBus(void);
 
 /**
-* @brief checks if a ROM_Number has a valid crc using the checkCRC() function
-* @param rom pointer on the ROM_Number struct that will be checked
-* @return true if the crc ist valid, false if not
+* @brief receives the 64 Bit ROM of a single sensor
+* @param rom the ROM_Number struct where the received family code, serial number and crc are written
 */
-bool checkROMCRC(ROM_Number *rom);
+void receiveSingleROM(ROM_Number *rom);
 
+/**
+* @brief receives the 9 Byte Scratchpad of a sensor
+* @param scratchpad pointer on the scratchpad struct where the received data is written
+*/
+void receiveScratchopad(Scratchpad *scratchpad);
 #endif
 //EOF

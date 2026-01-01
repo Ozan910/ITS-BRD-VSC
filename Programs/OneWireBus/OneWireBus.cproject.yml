@@ -176,6 +176,7 @@ project:
         - file: ../../ITS_BRD_LIB/Inc/timer.h
         - file: Inc/base_functions.h
         - file: Inc/myTimer.h
+        - file: Inc/sensors.h
 
 
     # Benutzerdefinierte Programmdateien
@@ -185,6 +186,7 @@ project:
         - file: Src/crc.c
         - file: Src/myTimer.c
         - file: Src/base_functions.c
+        - file: Src/sensors.c
 
 
   components:

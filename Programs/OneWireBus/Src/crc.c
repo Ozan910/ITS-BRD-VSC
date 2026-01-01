@@ -26,4 +26,35 @@ bool checkCRC(const unsigned int size, const unsigned char arr[size]){
    }
 	return 0x00 == crc;
 }
+
+bool checkROMCRC(ROM_Number *rom){
+    unsigned char arr[8];
+    arr[0] = rom->family;
+    for(int i = 0; i < 6; i++){
+        arr[1+i] = rom->serial[i];
+    }
+    arr[7] = rom->crc;
+
+    return checkCRC(8, arr);
+}
+
+bool checkScratchCRC(Scratchpad scratchpad){
+   unsigned char arr[9];
+   uint16_t temp = scratchpad->temperature;
+   uint8_t tempLSB = (uint8_t)(temp & 0xFF);
+   uint8_t tempMSB = (uint8_t)((temp >> 8) & 0xFF);
+
+   arr[0] = tempLSB;
+   arr[1] = tempMSB;
+
+   arr[2] = scratchpad->tHRegister;
+   arr[3] = scratchpad->tLRegister;
+   arr[4] = scratchpad->configRegister;
+   arr[5] = scratchpad->reserved1;
+   arr[6] = scratchpad->reserved2;
+   arr[7] = scratchpad->reserved3;
+   arr[8] = scratchpad->crc;
+
+   return checkCRC(9, arr);
+}
 // EOF
