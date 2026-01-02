@@ -185,6 +185,7 @@ project:
         - file: Inc/base_functions.h
         - file: Inc/sensors.h
         - file: Inc/myTimer.h
+        - file: Inc/input.h
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
@@ -194,6 +195,7 @@ project:
         - file: Src/myTimer.c
         - file: Src/base_functions.c
         - file: Src/sensors.c
+        - file: Src/input.c
 
   components:
     - component: ARM::CMSIS:CORE

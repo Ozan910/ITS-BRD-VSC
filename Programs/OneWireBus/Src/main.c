@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include "crc.h"
 #include "sensors.h"
+#include "input.h"
+#include "LCD_GUI.h"
 
 #define SEARCH_ROM 		0xF0
 #define READ_ROM 		0x33
@@ -43,12 +45,14 @@ int main(void) {
 	// Inits für Bus
 	//init1WireBus();
 	char buf[40];
-	initialPrint(buf, sizeof(buf));
-	lcdGotoXY(0,0);
-	lcdPrintlnS(buf);
+
 	while(1) {
 
-		TemperatureSensor sensores[2];
+		initialPrint(buf, sizeof(buf));//AnfgangsPrint für die tabelle
+		lcdGotoXY(0,0);
+		lcdPrintlnS(buf);
+
+		TemperatureSensor sensores[2];//Manuelle Eingabe der Sensoren (Hier kommt später SearchROM hin? 🤯 )
 		uint16_t sensorCount = 2;
 
 		{
@@ -83,16 +87,24 @@ int main(void) {
 		}
 
 
-	
-		for(int i = 0; i < sensorCount; i++){
-			lcdGotoXY(0, PRINTSTART + i);
-			prettyPrint(buf, sizeof(buf), &sensores[i]);
-			lcdPrintlnS(buf);
+		while(!inputs_isS0Pressed()){//Zyklische Abfrage der Temperaturen und Print findet hier statt. Auf button press wird der ganze loop ausgeführt um neue sensoren zu erkennen
+
+			for(int i = 0; i < sensorCount; i++){//Ausgabe der Temperatursensoren 
+				lcdGotoXY(0, PRINTSTART + i);
+				prettyPrint(buf, sizeof(buf), &sensores[i]);
+				lcdPrintlnS(buf);
+			}
+
+			mySleep(10000000);//10s delay für debug zwecke
+
 		}
-
-		mySleep(10000000);
+		mySetLED(7);
+		lcdGotoXY(5, 15);
+		lcdPrintlnS("break hat geklappt =)");//für debug zwecke check ob bei S0 rausspringt.
+		mySleep(5000000);
+		myClearLED(7);
+		GUI_clear(WHITE);
 	}
-
 }
 
 // EOF
