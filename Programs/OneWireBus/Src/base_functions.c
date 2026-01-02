@@ -10,6 +10,7 @@
 #include "base_functions.h"
 #include "myTimer.h"
 #include "stm32f4xx.h"
+#include "input.h"
 
 void sendBit1(void){
     GPIOD->BSRR = (1U << (PINNR + 16));//bus low
@@ -63,12 +64,14 @@ void sendByte(uint8_t byte){
 }
 
 void powerSupply750ms(void){
+    mySetLED(7);
     GPIOD->OTYPER &= ~(1U << PINNR);//IO-Port auf push-pull
     GPIOD->BSRR = (1U << PINNR);//IO-Port auf High schalten
 
     mySleep(750000);//750ms warten
 
     GPIOD->OTYPER |= (1U << PINNR);//IO-Port auf open-drain
+    myClearLED(7);
 }
 
 
@@ -88,6 +91,14 @@ void receiveSingleROM(ROM_Number *rom){//ROM kommt LSB -> MSB
         rom->serial[i] = readByte();//nächste 48 Bit serial number
     }
     rom->crc = readByte();//letzte 8 Bit sind CRC
+}
+
+void sendROMCode(ROM_Number *rom){
+    sendByte(rom->family);
+    for(int i = 0; i < 6; i++){
+        sendByte(rom->serial[i]);
+    }
+    sendByte(rom->crc);
 }
 
 void receiveScratchpad(Scratchpad *scratchpad){

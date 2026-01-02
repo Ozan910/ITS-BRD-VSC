@@ -58,7 +58,7 @@ void prettyPrint(char* buf, uint16_t bufferSize, TemperatureSensor *temperatureS
         getSensorTypeString(familyCode, model);
         snprintf(
             buf, bufferSize,
-            "%-7s 0x%02X-%02X%02X%02X%02X%02X%02X-%02X %s",
+            "%-7s 0x%02X-%02X%02X%02X%02X%02X%02X-%02X %-10s",
             model,
             temperatureSensor->rom_number.crc,
             temperatureSensor->rom_number.serial[5],
@@ -68,7 +68,7 @@ void prettyPrint(char* buf, uint16_t bufferSize, TemperatureSensor *temperatureS
             temperatureSensor->rom_number.serial[1],
             temperatureSensor->rom_number.serial[0],
             temperatureSensor->rom_number.family,
-            "CRC failed"
+            "disconnect"
         );
     }else{
         snprintf(buf, bufferSize, "%s", "Invalid ROM, CRC failed");

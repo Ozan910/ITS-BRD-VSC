@@ -71,6 +71,12 @@ void init1WireBus(void);
 void receiveSingleROM(ROM_Number *rom);
 
 /**
+* @brief sends a 64 Bit ROM LSB to MSB
+* @param rom pointer on the ROM_Number struct
+*/
+void sendROMCode(ROM_Number *rom);
+
+/**
 * @brief receives the 9 Byte Scratchpad of a sensor
 * @param scratchpad pointer on the scratchpad struct where the received data is written
 */

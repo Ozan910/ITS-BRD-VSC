@@ -43,11 +43,11 @@ int main(void) {
 	initTimer();
 
 	// Inits für Bus
-	//init1WireBus();
+	init1WireBus();
 	char buf[40];
 
 	while(1) {
-
+		GUI_clear(WHITE);
 		initialPrint(buf, sizeof(buf));//AnfgangsPrint für die tabelle
 		lcdGotoXY(0,0);
 		lcdPrintlnS(buf);
@@ -89,6 +89,35 @@ int main(void) {
 
 		while(!inputs_isS0Pressed()){//Zyklische Abfrage der Temperaturen und Print findet hier statt. Auf button press wird der ganze loop ausgeführt um neue sensoren zu erkennen
 
+			//hier beginnt zyklische abfrage
+			for(int i = 0; i < sensorCount; i++){
+				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection
+					continue;
+				}
+				sendByte(MATCH_ROM);
+				sendROMCode(&sensores[i].rom_number);//sende 8 byte rom code lsb nach msb
+				sendByte(CONVERT_T);
+
+				powerSupply750ms();//750ms 3.3 V
+
+				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection
+					continue;
+				}
+				sendByte(MATCH_ROM);
+				sendROMCode(&sensores[i].rom_number);
+				sendByte(READ_SCRATCHPAD);
+
+				Scratchpad scratchpad;
+				receiveScratchpad(&scratchpad);
+				if(checkScratchCRC(&scratchpad)){
+					sensores[i].scratchpad = scratchpad;
+					sensores[i].isScratchpadValid = true;
+				}else {
+					sensores[i].isScratchpadValid = false;
+				}
+
+			}
+			
 			for(int i = 0; i < sensorCount; i++){//Ausgabe der Temperatursensoren 
 				lcdGotoXY(0, PRINTSTART + i);
 				prettyPrint(buf, sizeof(buf), &sensores[i]);
@@ -98,12 +127,12 @@ int main(void) {
 			mySleep(10000000);//10s delay für debug zwecke
 
 		}
-		mySetLED(7);
+		
 		lcdGotoXY(5, 15);
 		lcdPrintlnS("break hat geklappt =)");//für debug zwecke check ob bei S0 rausspringt.
 		mySleep(5000000);
-		myClearLED(7);
-		GUI_clear(WHITE);
+		
+		
 	}
 }
 
