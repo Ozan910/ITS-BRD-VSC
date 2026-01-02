@@ -11,18 +11,13 @@
 #define SENSORS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct {
     uint8_t family;//8 Bit Family Code
     uint8_t serial[6];//48 Bit Serial Number (unique)
     uint8_t crc;//8 bit CRC
 } ROM_Number;
-
-typedef enum{
-    UNKNOWN,
-    DS18B20,
-    DS18S20
-} SensorType;
 
 typedef struct{
     int16_t temperature;//first 2 bytes = temp in uint16 lsb first
@@ -37,18 +32,10 @@ typedef struct{
 
 typedef struct{
     ROM_Number rom_number;//unique ROM Number
-    SensorType type;
+    bool isROMValid;
     Scratchpad scratchpad;
-    float measuredTemperature;
+    bool isScratchpadValid;
 }TemperatureSensor;
-
-/**
-* @brief returns the sensor type as enum based on the family code
-* @param familyCode the 8 Bit family code defining the sensor type
-* @return the Sensor Type as enum
-*/
-SensorType getSensorType(uint8_t familyCode);
-
 
 /**
 * @brief returns the sensor type name as string based on sensor type
@@ -56,7 +43,7 @@ SensorType getSensorType(uint8_t familyCode);
 * @param stringBuffer has to be at least 8 char long.
 * @return char pointer on string with sensory type name
 */
-char* getSensorTypeString(SensorType sensorType, char *stringBuffer);
+char* getSensorTypeString(uint8_t familyCode, char *stringBuffer);
 
 /**
 * @brief converts the int16_t temperatur in float and in scale by dividing by 16.0f
@@ -64,6 +51,21 @@ char* getSensorTypeString(SensorType sensorType, char *stringBuffer);
 * @return the temperature in float
 */
 float getFloatTemp(int16_t intTemp);
+
+/**
+* @brief formatiertes printen für Family, ROM und Messwert. Schreibt infos in gegebenen String. 
+* @param buf der Buffer wo der String abgelegt wird. at least 40 long
+* @param bufferSize größe des Buffers
+* @param TemperatureSensor der Sensor der geprintet werden soll
+*/
+void prettyPrint(char* buf, uint16_t bufferSize, TemperatureSensor *temperatureSensor);
+
+/**
+* @brief schreibt den initialPrint in den buffer
+* @param buf der String buffer (min 40 groß)
+* @param size die größe des buffers
+*/
+void initialPrint(char *buf, uint16_t size);
 
 #endif
 //EOF

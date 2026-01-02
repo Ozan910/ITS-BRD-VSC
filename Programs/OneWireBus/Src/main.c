@@ -29,6 +29,8 @@
 #define CONVERT_T		0x44
 #define READ_SCRATCHPAD 0xBE
 
+#define PRINTSTART 1
+
 
 int main(void) {
 	initITSboard();    // Initialisierung des ITS Boards
@@ -39,55 +41,58 @@ int main(void) {
 	initTimer();
 
 	// Inits für Bus
-	init1WireBus();
+	//init1WireBus();
+	char buf[40];
+	initialPrint(buf, sizeof(buf));
+	lcdGotoXY(0,0);
+	lcdPrintlnS(buf);
 	while(1) {
-		if(!sendReset()){
-			lcdPrintlnS("Pulse Detected");
-		} else {
-			continue;
+
+		TemperatureSensor sensores[2];
+		uint16_t sensorCount = 2;
+
+		{
+			TemperatureSensor sensor;
+			sensor.rom_number.family = 0x28;
+			sensor.rom_number.serial[0] = 0x36;
+			sensor.rom_number.serial[1] = 0xFB;
+			sensor.rom_number.serial[2] = 0x88;
+			sensor.rom_number.serial[3] = 0x0D;
+			sensor.rom_number.serial[4] = 0x00;
+			sensor.rom_number.serial[5] = 0x00;
+			sensor.rom_number.crc = 0x42;
+
+			sensor.isROMValid = checkROMCRC(&sensor.rom_number);
+
+			sensores[0] = sensor;
+		}
+		{
+			TemperatureSensor sensor;
+			sensor.rom_number.family = 0x28;
+			sensor.rom_number.serial[0] = 0x5A;
+			sensor.rom_number.serial[1] = 0x42;
+			sensor.rom_number.serial[2] = 0x88;
+			sensor.rom_number.serial[3] = 0x0D;
+			sensor.rom_number.serial[4] = 0x00;
+			sensor.rom_number.serial[5] = 0x00;
+			sensor.rom_number.crc = 0x40;
+
+			sensor.isROMValid = checkROMCRC(&sensor.rom_number);
+
+			sensores[1] = sensor;
 		}
 
-		sendByte(READ_ROM);//sende befehl für Read Rom [33h]
-		ROM_Number rom;
-		receiveSingleROM(&rom);
 
-		if(checkROMCRC(&rom)){
-			lcdPrintlnS("CRC valid");
-		}else{
-			lcdPrintlnS("invalid CRC");
+	
+		for(int i = 0; i < sensorCount; i++){
+			lcdGotoXY(0, PRINTSTART + i);
+			prettyPrint(buf, sizeof(buf), &sensores[i]);
+			lcdPrintlnS(buf);
 		}
 
-		char buf[50];
-		snprintf(buf, sizeof(buf), "%02X-%02X%02X%02X%02X%02X%02X-%02X", rom.family, rom.serial[0], rom.serial[1], rom.serial[2], rom.serial[3], rom.serial[4], rom.serial[5], rom.crc);
-
-		lcdPrintlnS(buf);
-
-		if(!sendReset()){
-			lcdPrintlnS("Pulse Detected");
-		} else {
-			continue;
-		}
-		sendByte(SKIP_ROM);
-		sendByte(CONVERT_T);
-		powerSupply750ms();
-
-		if(!sendReset()){
-				lcdPrintlnS("Pulse Detected");
-			} else {
-				continue;
-			}
-		sendByte(SKIP_ROM);
-		sendByte(READ_SCRATCHPAD);
-		Scratchpad scratchpad;
-		receiveScratchpad(&scratchpad);
-		float temp = getFloatTemp(scratchpad.temperature);
-		snprintf(buf, sizeof(buf), "Temperature: %f", temp);
-		lcdPrintlnS(buf);
-
-		mySleep(10000000);
-		mySleep(10000000);
-		mySleep(10000000);
 		mySleep(10000000);
 	}
+
 }
+
 // EOF

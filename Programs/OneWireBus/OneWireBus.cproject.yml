@@ -1,6 +1,6 @@
 # Projektdefinition für ITSboard
 project:
-    # Packs für das Projekt, verwendet Anker & Alias, um Redundanz zu vermeiden
+  # Packs für das Projekt, verwendet Anker & Alias, um Redundanz zu vermeiden
   packs:
     - pack: Keil::STM32F4xx_DFP
     - pack: ARM::CMSIS
@@ -10,8 +10,9 @@ project:
   setups:
     - setup: Options for ITSboard
       processor:
-        fpu: sp  # Setzt den FPU-Typ auf "Single Precision"
-      add-path:  # Pfade zu Header-Dateien und weiteren Ressourcen
+        fpu: sp # Setzt den FPU-Typ auf "Single Precision"
+      add-path:
+        # Pfade zu Header-Dateien und weiteren Ressourcen
         - Inc
         - ../../stm32cubef4/Drivers/CMSIS/Device/ST/STM32F4xx/Include
         - ../../stm32cubef4/Drivers/CMSIS/Include
@@ -24,19 +25,23 @@ project:
 
       #debug: "on"  # Aktiviert den Debug-Modus
 
-      define:  # Präprozessordefinitionen
+      define:
+        # Präprozessordefinitionen
         - STM32F429xx
         - USE_HAL_DRIVER
         - USE_STM32F4XX_NUCLEO_144
         - __MICROLIB
 
-      define-asm:  # Definitionen für den Assembler
+      define-asm:
+        # Definitionen für den Assembler
         - __MICROLIB
 
       misc:
-        - C:  # C-spezifische Compiler-Optionen
+        - C:
+            # C-spezifische Compiler-Optionen
             - -std=c99
-          C-CPP:  # Optionen für C++
+          C-CPP:
+            # Optionen für C++
             - -fno-rtti
             - -funsigned-char
             - -fshort-enums
@@ -54,10 +59,12 @@ project:
             - -Wno-documentation
             - -Wno-license-management
             - -Wno-parentheses-equality
-          CPP:  # C++-spezifische Optionen
+          CPP:
+            # C++-spezifische Optionen
             - -xc++
             - -std=c++11
-          Link:  # Linker-Optionen
+          Link:
+            # Linker-Optionen
             - --library_type=microlib
             - --map
             - --load_addr_map_info
@@ -90,7 +97,8 @@ project:
     # Board-spezifische Treiber
     - group: Drivers/Board
       misc:
-        - CPP:  # C++-Optionen für diese Gruppe
+        - CPP:
+            # C++-Optionen für diese Gruppe
             - -xc++
       files:
         - file: ../../ITS_BRD_LIB/Src/startup/system_stm32f4xx.c
@@ -175,10 +183,8 @@ project:
         - file: Inc/crc.h
         - file: ../../ITS_BRD_LIB/Inc/timer.h
         - file: Inc/base_functions.h
-        - file: Inc/myTimer.h
         - file: Inc/sensors.h
-        - file: Inc/myList.h
-
+        - file: Inc/myTimer.h
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
@@ -188,8 +194,6 @@ project:
         - file: Src/myTimer.c
         - file: Src/base_functions.c
         - file: Src/sensors.c
-        - file: Src/myList.c
-
 
   components:
     - component: ARM::CMSIS:CORE
