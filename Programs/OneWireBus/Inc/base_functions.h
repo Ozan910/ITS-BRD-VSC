@@ -55,7 +55,7 @@ uint8_t readByte(void);
 void sendByte(uint8_t byte);
 
 /**
-* @brief used to suppy the parasite sensors with power for 750 ms. this function sets the bus to push-pull and HIGH, supplies the power then sets it back to open drain. 3.3V will be on the bus for 750ms. GPIOD, PINNR (PD0)
+* @brief used to supply the parasite sensors with power for 750 ms. this function sets the bus to push-pull and HIGH, supplies the power then sets it back to open drain. 3.3V will be on the bus for 750ms. GPIOD, PINNR (PD0)
 */
 void powerSupply750ms(void);
 
@@ -83,3 +83,15 @@ void sendROMCode(ROM_Number *rom);
 void receiveScratchpad(Scratchpad *scratchpad);
 #endif
 //EOF
+
+/**
+* @brief eine Funktion die den searchROM algorithmus implementiert. sie sucht alle ROMS bis max zur maxSensorCount. return ist ein FehlerCode
+* @param sensors
+* @param maxSensorCount
+* @param actualSensorCount
+* @return 0: SUCCESS 
+* @return -1: Keine Sensoren Gefunden
+* @return -2: Unexpected Control Flow
+*
+*/
+int findAllROMS(TemperatureSensor *sensors, uint16_t maxSensorCount, uint16_t *actualSensorCount);

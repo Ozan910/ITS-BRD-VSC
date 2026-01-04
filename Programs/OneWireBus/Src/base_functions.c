@@ -11,6 +11,7 @@
 #include "myTimer.h"
 #include "stm32f4xx.h"
 #include "input.h"
+#include "crc.h"
 
 void sendBit1(void){
     GPIOD->BSRR = (1U << (PINNR + 16));//bus low
@@ -113,4 +114,81 @@ void receiveScratchpad(Scratchpad *scratchpad){
     scratchpad->reserved2 = readByte();
     scratchpad->reserved3 = readByte();
     scratchpad->crc = readByte();
+}
+
+int findAllROMS(TemperatureSensor *sensors, uint16_t maxSensorCount, uint16_t *actualSensorCount){//RETURN 0 = yippee, return -1 = no Sensors found ☹️, -2
+    if(maxSensorCount == 0) return 0;//wenn man keine sensoren haben darf
+    
+    uint64_t sensorsINTROM[maxSensorCount];
+    *actualSensorCount = 0;
+    
+    int16_t letzteUnbehandelteVerzweigung = -1;
+    int16_t neueLetzteUnbehandelteVerzweigung = -1;
+    bool allFound = false;
+    uint16_t currentROMIdx = 0;
+    
+    while(!allFound){
+        sendReset();
+		sendByte(0xF0); 
+        neueLetzteUnbehandelteVerzweigung = -1;//zurücksetzen auf den initialwert
+        uint64_t currentROM = 0;
+        for(uint16_t bitIdx = 0; bitIdx < 64; bitIdx++){
+            uint64_t incomingBit = (uint64_t) readBit();//cast auf 64 bit int damit die shifts sicher sind 
+            uint64_t complBit = (uint64_t) readBit();
+            
+            if(incomingBit != complBit){                // 0|1 oder 1|0 also alles gut =)
+                currentROM |= (incomingBit << bitIdx);
+                incomingBit ? sendBit1() : sendBit0();// wenn wir eine: 1 bekommen -> 1 senden / 0 bekommen -> 0 senden
+                
+            }else if (incomingBit == 0 && complBit == 0){    // 0|0 also mindestens einer sendet 0 und mindestens einer sendet 1
+                if(bitIdx < letzteUnbehandelteVerzweigung){             //Fall 1: aktueller Bit ist kleiner als letzteUnbehandelteVerzweigung, wir kopieren den pfad des letzten 😈
+                    if((currentROMIdx > 0) && (sensorsINTROM[currentROMIdx - 1] & (1ULL << bitIdx))){//alles > 0 = true, 0 = false
+                        currentROM |= (1ULL << bitIdx);
+                        sendBit1();
+                    }else{//wenn wir eine 0 senden heißt es um die Verzweigung wurde sich beim Vorgänger nicht gekümmert deswegen weiterreichen
+                        neueLetzteUnbehandelteVerzweigung = bitIdx;
+                        sendBit0();
+                    }
+                    
+                }else if(bitIdx == letzteUnbehandelteVerzweigung){      //Fall 2: aktueller Bit gleich letzteUnbehandelteVerzweigung, wir entscheiden uns diesmal für 1 (behandeln die verzweigung)
+                    currentROM |= (1ULL << bitIdx);
+                    sendBit1();
+                    
+                }else if(bitIdx > letzteUnbehandelteVerzweigung){       //Fall 1: aktueller Bit ist größer als letzteUnbehandelteVerzweigung (wir erkunden neues gebiet, standard antwort = 0)
+                    neueLetzteUnbehandelteVerzweigung = bitIdx;
+                    sendBit0();
+                }
+                
+            }else if (incomingBit == 1 && complBit == 1){
+                //Keine Sensoren an der Leitung. return -1
+                return -1;
+            }else{
+                //Unexpected Control flow. return -2
+                return -2;
+            }
+        }
+        //1 rom gefunden =)
+        //aufräumen für nächste iteration
+        allFound = (neueLetzteUnbehandelteVerzweigung == -1);//wenn keine unbehandelte verzweigung mehr durchgereicht wird sind alle abgearbeitet
+        letzteUnbehandelteVerzweigung = neueLetzteUnbehandelteVerzweigung;//weiterreichen für den nächsten
+        sensorsINTROM[currentROMIdx] = currentROM;//rom speichern in rom array
+        (*actualSensorCount)++;//tatsächlichen sensor count erhöhen|
+        currentROMIdx++;//ROM Id inkrementieren                    |die beiden könnten eigentlich zu einer variable zusammengefasst werden.
+        if(currentROMIdx >= maxSensorCount) allFound = true;//wenn maxSensorCount Sensoren gefunden wurden, gehen wir raus
+        
+    }
+    //hier werden die INTROMs in ROM structs umgewandelt
+    for(uint16_t i = 0; i < *actualSensorCount; i++){
+        sensors[i].rom_number.family = ((sensorsINTROM[i] >> (0 * 8)) & 0xFF);//Integer Rom wird um n * 8 Bit nach rechts verschoben und mit 0xFF verundet um nur die n. 8 bits zu lesen
+        sensors[i].rom_number.serial[0] = ((sensorsINTROM[i] >> (1 * 8)) & 0xFF);
+        sensors[i].rom_number.serial[1] = ((sensorsINTROM[i] >> (2 * 8)) & 0xFF);
+        sensors[i].rom_number.serial[2] = ((sensorsINTROM[i] >> (3 * 8)) & 0xFF);
+        sensors[i].rom_number.serial[3] = ((sensorsINTROM[i] >> (4 * 8)) & 0xFF);
+        sensors[i].rom_number.serial[4] = ((sensorsINTROM[i] >> (5 * 8)) & 0xFF);
+        sensors[i].rom_number.serial[5] = ((sensorsINTROM[i] >> (6 * 8)) & 0xFF);
+        sensors[i].rom_number.crc = ((sensorsINTROM[i] >> (7 * 8)) & 0xFF);
+
+        sensors[i].isROMValid = checkROMCRC(&sensors[i].rom_number);
+    }
+    return 0;
 }

@@ -32,6 +32,7 @@
 #define READ_SCRATCHPAD 0xBE
 
 #define PRINTSTART 1
+#define MAX_SENSORS 8
 
 
 int main(void) {
@@ -52,38 +53,16 @@ int main(void) {
 		lcdGotoXY(0,0);
 		lcdPrintlnS(buf);
 
-		TemperatureSensor sensores[2];//Manuelle Eingabe der Sensoren (Hier kommt später SearchROM hin? 🤯 )
-		uint16_t sensorCount = 2;
+		TemperatureSensor sensors[MAX_SENSORS];//Manuelle Eingabe der Sensoren (Hier kommt später SearchROM hin? 🤯 )
+		uint16_t sensorCount = 0;
 
-		{
-			TemperatureSensor sensor;
-			sensor.rom_number.family = 0x28;
-			sensor.rom_number.serial[0] = 0x36;
-			sensor.rom_number.serial[1] = 0xFB;
-			sensor.rom_number.serial[2] = 0x88;
-			sensor.rom_number.serial[3] = 0x0D;
-			sensor.rom_number.serial[4] = 0x00;
-			sensor.rom_number.serial[5] = 0x00;
-			sensor.rom_number.crc = 0x42;
-
-			sensor.isROMValid = checkROMCRC(&sensor.rom_number);
-
-			sensores[0] = sensor;
-		}
-		{
-			TemperatureSensor sensor;
-			sensor.rom_number.family = 0x28;
-			sensor.rom_number.serial[0] = 0x5A;
-			sensor.rom_number.serial[1] = 0x42;
-			sensor.rom_number.serial[2] = 0x88;
-			sensor.rom_number.serial[3] = 0x0D;
-			sensor.rom_number.serial[4] = 0x00;
-			sensor.rom_number.serial[5] = 0x00;
-			sensor.rom_number.crc = 0x40;
-
-			sensor.isROMValid = checkROMCRC(&sensor.rom_number);
-
-			sensores[1] = sensor;
+		int rc = findAllROMS(sensors, MAX_SENSORS, &sensorCount);
+		if(rc == -1){
+			lcdGotoXY(0,16);
+			lcdPrintlnS("KEINE SENSOREN ERKANNT!");
+		}else if(rc < 0){
+			lcdGotoXY(0,17);
+			lcdPrintlnS("Unerwarteter Fehler aufgetreten");
 		}
 
 
@@ -95,7 +74,7 @@ int main(void) {
 					continue;
 				}
 				sendByte(MATCH_ROM);
-				sendROMCode(&sensores[i].rom_number);//sende 8 byte rom code lsb nach msb
+				sendROMCode(&sensors[i].rom_number);//sende 8 byte rom code lsb nach msb
 				sendByte(CONVERT_T);
 
 				powerSupply750ms();//750ms 3.3 V
@@ -104,33 +83,33 @@ int main(void) {
 					continue;
 				}
 				sendByte(MATCH_ROM);
-				sendROMCode(&sensores[i].rom_number);
+				sendROMCode(&sensors[i].rom_number);
 				sendByte(READ_SCRATCHPAD);
 
 				Scratchpad scratchpad;
 				receiveScratchpad(&scratchpad);
 				if(checkScratchCRC(&scratchpad)){
-					sensores[i].scratchpad = scratchpad;
-					sensores[i].isScratchpadValid = true;
+					sensors[i].scratchpad = scratchpad;
+					sensors[i].isScratchpadValid = true;
 				}else {
-					sensores[i].isScratchpadValid = false;
+					sensors[i].isScratchpadValid = false;
 				}
 
 			}
 			
 			for(int i = 0; i < sensorCount; i++){//Ausgabe der Temperatursensoren 
 				lcdGotoXY(0, PRINTSTART + i);
-				prettyPrint(buf, sizeof(buf), &sensores[i]);
+				prettyPrint(buf, sizeof(buf), &sensors[i]);
 				lcdPrintlnS(buf);
 			}
 
-			mySleep(10000000);//10s delay für debug zwecke
+			//mySleep(10000000);//10s delay für debug zwecke
 
 		}
 		
 		lcdGotoXY(5, 15);
-		lcdPrintlnS("break hat geklappt =)");//für debug zwecke check ob bei S0 rausspringt.
-		mySleep(5000000);
+		lcdPrintlnS("break hat geklappt");//für debug zwecke check ob bei S0 rausspringt.
+		//mySleep(5000000);
 		
 		
 	}
