@@ -94,29 +94,24 @@ int main(void) {
 				*/
 
 				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection
-					continue;
-				}
-				sendByte(MATCH_ROM);
-				sendROMCode(&sensors[i].rom_number);
-				sendByte(READ_SCRATCHPAD);
-
-				Scratchpad scratchpad;
-				receiveScratchpad(&scratchpad);
-				if(checkScratchCRC(&scratchpad)){
-					sensors[i].scratchpad = scratchpad;
-					sensors[i].isScratchpadValid = true;
-				}else {
-					sensors[i].isScratchpadValid = false;
-				}
-
-			}
-			
-			for(int i = 0; i < sensorCount; i++){//Ausgabe der Temperatursensoren 
-				if(sendReset()){
 					for(int i = 0; i < sensorCount; i++){
 						sensors[i].isScratchpadValid = false;
 					}
+				}else{
+					sendByte(MATCH_ROM);
+					sendROMCode(&sensors[i].rom_number);
+					sendByte(READ_SCRATCHPAD);
+
+					Scratchpad scratchpad;
+					receiveScratchpad(&scratchpad);
+					if(checkScratchCRC(&scratchpad)){
+						sensors[i].scratchpad = scratchpad;
+						sensors[i].isScratchpadValid = true;
+					}else {
+						sensors[i].isScratchpadValid = false;
+					}
 				}
+				
 				lcdGotoXY(0, PRINTSTART + i);
 				prettyPrint(buf, sizeof(buf), &sensors[i]);
 				for(int j = 0; j < STRING_BUFFERSIZE; j++){
@@ -129,13 +124,10 @@ int main(void) {
 						lcdPrintC(currentChar);
 						printedLines[i][j] = currentChar;
 					}
-
-
 				}
+
 			}
-
 			//mySleep(10000000);//10s delay für debug zwecke
-
 		}
 		
 		lcdGotoXY(5, 15);

@@ -19,7 +19,7 @@ typedef struct {
     uint8_t crc;//8 bit CRC
 } ROM_Number;
 
-typedef struct{
+typedef struct{//ich dachte beim erstellen des structs dass das scratchpad beider sensortypen gleich ist. der struct ist für ds18b20 also 0x28 ausgelegt aber auch für s20 verwendbar, namensgebung ist dann nur etwas falsch
     int16_t temperature;//first 2 bytes = temp in uint16 lsb first
     uint8_t tHRegister;//or user Byte 1
     uint8_t tLRegister;//or user Byte 2
@@ -50,7 +50,7 @@ char* getSensorTypeString(uint8_t familyCode, char *stringBuffer);
 * @param intTemp the 16 bit in temperature
 * @return the temperature in float
 */
-float getFloatTemp(int16_t intTemp);
+float getFloatTemp(TemperatureSensor *sensor);
 
 /**
 * @brief formatiertes printen für Family, ROM und Messwert. Schreibt infos in gegebenen String. 

@@ -29,8 +29,20 @@ char* getSensorTypeString(uint8_t familyCode, char *stringBuffer){
     return stringBuffer;
 }
 
-float getFloatTemp(int16_t intTemp){
-    return (intTemp / 16.0f);
+float getFloatTemp(TemperatureSensor *sensor){
+    int16_t preConv = sensor->scratchpad.temperature;
+    if(sensor->rom_number.family == 0x10){
+        int16_t temp_read = preConv >> 1;
+        uint8_t countRemain = sensor->scratchpad.reserved2;
+        uint8_t countPerC = sensor->scratchpad.reserved3;
+
+        if(countPerC == 0) return (float)temp_read;//falls irgendwie countPerC 0 sein sollte
+
+        return (float)temp_read - 0.25f + ((float)(countPerC - countRemain) / (float)countPerC);
+
+    }else{
+        return (preConv / 16.0f);
+    }
 }
 
 void prettyPrint(char* buf, uint16_t bufferSize, TemperatureSensor *temperatureSensor){
@@ -50,7 +62,7 @@ void prettyPrint(char* buf, uint16_t bufferSize, TemperatureSensor *temperatureS
             temperatureSensor->rom_number.serial[1],
             temperatureSensor->rom_number.serial[0],
             temperatureSensor->rom_number.family,
-            getFloatTemp(temperatureSensor->scratchpad.temperature)
+            getFloatTemp(temperatureSensor)
         );
     }else if(temperatureSensor->isROMValid){
         uint8_t familyCode = temperatureSensor->rom_number.family;
