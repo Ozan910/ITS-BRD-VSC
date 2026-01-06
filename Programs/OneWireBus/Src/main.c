@@ -23,6 +23,7 @@
 #include "sensors.h"
 #include "input.h"
 #include "LCD_GUI.h"
+#include <string.h>
 
 #define SEARCH_ROM 		0xF0
 #define READ_ROM 		0x33
@@ -33,6 +34,7 @@
 
 #define PRINTSTART 1
 #define MAX_SENSORS 8
+#define STRING_BUFFERSIZE 40
 
 
 int main(void) {
@@ -45,15 +47,17 @@ int main(void) {
 
 	// Inits für Bus
 	init1WireBus();
-	char buf[40];
+	char buf[STRING_BUFFERSIZE];
+	static char printedLines[MAX_SENSORS][STRING_BUFFERSIZE];
 
 	while(1) {
 		GUI_clear(WHITE);
+		memset(printedLines, ' ', sizeof(printedLines));
 		initialPrint(buf, sizeof(buf));//AnfgangsPrint für die tabelle
 		lcdGotoXY(0,0);
 		lcdPrintlnS(buf);
 
-		TemperatureSensor sensors[MAX_SENSORS];//Manuelle Eingabe der Sensoren (Hier kommt später SearchROM hin? 🤯 )
+		TemperatureSensor sensors[MAX_SENSORS];//Automatische Erkennung der Sensoren durch SearchROM 🤯 
 		uint16_t sensorCount = 0;
 
 		int rc = findAllROMS(sensors, MAX_SENSORS, &sensorCount);
@@ -68,9 +72,18 @@ int main(void) {
 
 		while(!inputs_isS0Pressed()){//Zyklische Abfrage der Temperaturen und Print findet hier statt. Auf button press wird der ganze loop ausgeführt um neue sensoren zu erkennen
 
+			
+
+			if(!sendReset()){//wenn min 1 sensor erkannt wird: hier alle auf einmal messen lassen
+				sendByte(SKIP_ROM);
+				sendByte(CONVERT_T);
+				powerSupply750ms();
+			}
+
 			//hier beginnt zyklische abfrage
 			for(int i = 0; i < sensorCount; i++){
-				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection
+				/*
+				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection hier einzel messungen
 					continue;
 				}
 				sendByte(MATCH_ROM);
@@ -78,6 +91,7 @@ int main(void) {
 				sendByte(CONVERT_T);
 
 				powerSupply750ms();//750ms 3.3 V
+				*/
 
 				if(sendReset()){//0 wenn puls erkannt: also hier rein wenn keine connection
 					continue;
@@ -98,9 +112,26 @@ int main(void) {
 			}
 			
 			for(int i = 0; i < sensorCount; i++){//Ausgabe der Temperatursensoren 
+				if(sendReset()){
+					for(int i = 0; i < sensorCount; i++){
+						sensors[i].isScratchpadValid = false;
+					}
+				}
 				lcdGotoXY(0, PRINTSTART + i);
 				prettyPrint(buf, sizeof(buf), &sensors[i]);
-				lcdPrintlnS(buf);
+				for(int j = 0; j < STRING_BUFFERSIZE; j++){
+					char currentChar = buf[j];
+					if(currentChar == '\0'){
+						currentChar = ' ';
+					}
+					if(currentChar != printedLines[i][j]){
+						lcdGotoXY(j, i+1);
+						lcdPrintC(currentChar);
+						printedLines[i][j] = currentChar;
+					}
+
+
+				}
 			}
 
 			//mySleep(10000000);//10s delay für debug zwecke
