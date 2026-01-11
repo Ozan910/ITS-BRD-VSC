@@ -172,12 +172,24 @@ project:
     - group: Program/User/Inc
       files:
         - file: ../../ITS_BRD_LIB/Inc/lcd.h
+        - file: Inc/main.h
+        - file: Inc/displayOutputs.h
+        - file: Inc/fehler.h
+        - file: Inc/fsm.h
+        - file: Inc/ledOutputs.h
+        - file: Inc/rechner.h
+        - file: ../../ITS_BRD_LIB/Inc/timer.h
+
 
 
     # Benutzerdefinierte Programmdateien
     - group: Program/User/Src
       files:
         - file: Src/main.c
+        - file: Src/displayOutputs.c
+        - file: Src/fsm.c
+        - file: Src/ledOutputs.c
+        - file: Src/rechner.c
 
 
   components:
