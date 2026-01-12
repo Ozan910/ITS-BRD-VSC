@@ -32,6 +32,10 @@ double calcAngularSpeed(long stepDelta, uint32_t timeDeltaTicks) {
         return 0.0;
     }
 
+    if(stepDelta < 0){
+        stepDelta *= (-1);
+    }
+
     // 1. Wegdifferenz in Grad berechnen
     // Hier behalten wir das Vorzeichen bei! (-10 Schritte = Rückwärtsbewegung)
     double degreeDelta = ((double)stepDelta / STEPS_PER_REVOLUTION) * DEGREES_PER_CIRCLE;

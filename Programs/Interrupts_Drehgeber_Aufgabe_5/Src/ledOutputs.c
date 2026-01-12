@@ -44,8 +44,9 @@ void ledOutputs_clearError(void){
     myClearLED(LED_ERROR);
 }
 
-void ledOutputs_setStepCount(uint8_t count){
+void ledOutputs_setStepCount(uint32_t count){
+    uint8_t bits = (uint8_t) count;
     GPIOD->BSRR = (0xFF << 16);//löscht alle LEDs
 
-    GPIOD->BSRR = count;//setzt aktuelle step zah als LEDs 
+    GPIOD->BSRR = bits;//setzt aktuelle step zah als LEDs 
 }

@@ -48,7 +48,7 @@ void ledOutputs_clearError(void);
 *
 * @param count Schrittzähler als 8 Bit-Zahl
 */
-void ledOutputs_setStepCount(uint8_t count);
+void ledOutputs_setStepCount(uint32_t count);
 
 
 #endif
