@@ -179,6 +179,7 @@ project:
         - file: Inc/ledOutputs.h
         - file: Inc/rechner.h
         - file: ../../ITS_BRD_LIB/Inc/timer.h
+        - file: Inc/interrupts.h
 
 
 
@@ -190,6 +191,7 @@ project:
         - file: Src/fsm.c
         - file: Src/ledOutputs.c
         - file: Src/rechner.c
+        - file: Src/interrupts.c
 
 
   components:

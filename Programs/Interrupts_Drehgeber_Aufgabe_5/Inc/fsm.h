@@ -15,12 +15,6 @@ typedef enum {
     IDLE, FWD, REV, ERR
 } Direction;
 
-Direction getDirection(uint8_t phase);
-
-uint8_t getOldPhase(void);
-
-void setOldPhase(uint8_t phase);
-
 void waitForReset(void);
 
 #endif
