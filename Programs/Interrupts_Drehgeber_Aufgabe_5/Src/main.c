@@ -81,13 +81,20 @@ int main(){
 
     //snapshot von den isr daten
 
-    position = isr_position;
-    dir = isr_dir;
-    rechnerTimeTicks = isr_timeTicks;
+    for(int i = 0; i < 10; i++){//check
+      rechnerTimeTicks = isr_timeTicks;
+      position = isr_position;
+      dir = isr_dir;
+      uint32_t testTimeTicks = isr_timeTicks;
+      int32_t testPosition = isr_position;
+      if(testTimeTicks == rechnerTimeTicks && testPosition == position){
+        break;
+      }
+      if(i >= 9){
+        dir = ERR;
+      }
+    }
     currentTimeTicks = getTimeStamp();
-
-
-
 
     //fehler abfangen
     if(dir == ERR){
