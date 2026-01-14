@@ -9,12 +9,14 @@
 #define X_SPEED 23
 #define Y_SPEED 5
 
-static char angleBuffer[20] = "";
+static char angleBuffer[12] = "";
+static char oldAngle[12] = "           ";
 static int angleLength = 0;
 static int angleIndex = 0;
 static bool angleHasNext = false;
 
-static char speedBuffer[20] = "";
+static char speedBuffer[12] = "";
+static char oldSpeed[12] = "           ";
 static int speedLength = 0;
 static int speedIndex = 0;
 static bool speedHasNext = false;
@@ -34,6 +36,8 @@ void displayOutputs_initialPrint(void){
 }
 
 void displayOutputs_printAngle(double angle){
+    memset(angleBuffer, ' ', 12);
+    angleBuffer[11] = '\0';
     sprintf(angleBuffer, "%.5f", angle);
     
     angleLength = strlen(angleBuffer);
@@ -42,7 +46,9 @@ void displayOutputs_printAngle(double angle){
 }
 
 void displayOutputs_printAngularSpeed(double speed){
-    sprintf(speedBuffer, "%.2f", speed);
+    memset(speedBuffer, ' ', 12);
+    speedBuffer[11] = '\0';
+    snprintf(speedBuffer, 11, "%-9.2f", speed);
 
     speedLength = strlen(speedBuffer);
     speedIndex = 0;
@@ -65,7 +71,10 @@ void displayOutputs_printNextChar(void){
             lcdGotoXY(X_ANGLE, Y_ANGLE);
         }
         lcdGotoXY(X_ANGLE + angleIndex,Y_ANGLE);
-        lcdPrintC(angleBuffer[angleIndex]);
+        if(angleBuffer[angleIndex] != oldAngle[angleIndex]){
+            lcdPrintC(angleBuffer[angleIndex]);
+            oldAngle[angleIndex] = angleBuffer[angleIndex];
+        }
         angleIndex++;
 
         if(angleIndex >= angleLength){
@@ -78,7 +87,10 @@ void displayOutputs_printNextChar(void){
             lcdGotoXY(X_SPEED, Y_SPEED);
         }
         lcdGotoXY(X_SPEED + speedIndex,Y_SPEED);
-        lcdPrintC(speedBuffer[speedIndex]);
+        if(speedBuffer[speedIndex] != oldSpeed[speedIndex]){
+            lcdPrintC(speedBuffer[speedIndex]);
+            oldSpeed[speedIndex] = speedBuffer[speedIndex];
+        }
         speedIndex++;
 
         if(speedIndex >= speedLength){
