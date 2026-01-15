@@ -1,0 +1,9 @@
+1. Die Main wurde umgeschrieben da sie in Aufgabe 2 etwas zu umständlich war. außerdem Wurde der Switch Case Turm durch ein 2 Dimensionales Array für die Umwandlung von Phasen in Directions genutzt. Die State sind Nicht mehr Phasen sondern Tatsächliche Drehrichtung des Drehgebers. Die Fehlerbehandlung ist jetzt sauberer Implementiert.
+
+2. Statt am Anfang der Main nach der Info zu pollen und dann einen Zeitstempel zu setzen der eigentlich nicht bedeutet wann die Phase gewechselt wurde sondern Wann ich den Zeitstempel bemerkt habe wird der Stempel jetzt mit der Änderung selbst von der ISR geliefert. Er ist dadurch um ein vielfaches präziser. 
+
+3. Der Aufbau ist wie folgt: Die Main hat 3 volatile Variablen. dir (also der State / die Drehrichtung), rechnerTimeTicks (Der Zeitpunkt der letzten Phasen änderung), position (Der Phasenzähler bzw die Position des Drehgebers (wie viele schritt in Positive oder negaive richtung seit Start gemacht wurden). Diese 3 Variablen werden von der ISR beschrieben. Die main liest diese Doppelt ein und vergleicht die Einlesungen miteinander. stimmen sie überein werden sie verwendet, sollten sie 10 mal hintereinander nicht übereinstimmen (weil die Interrupts zu schnell kommen) geht die Main in der Error State. Die Adressen der 3 Variablen werden mit der Funktion SendAdresses an das Interrupt Modul übergeben, wo pointer auf sie static also modulvariablen sind. Die ISR schreibt also direkt über diese Pointer in die Main. Sollte auch nur ein Pointer auf 0 zeigen (also den initial wert) macht die ISR nichts. sendAdresses muss also richtig ausgeführt worden sein bevor die IRQs aktiviert wurden.
+
+4. Der Unterschied ist also dass die Main nicht nach dem Zustand fragt sondern der die Zustandsänderung automatisch durch die Hardware an die Main gelangt. 
+
+5. Der Einzige Zeitpunkt wo maskiert wird ist während der Fehlerbehandlung und während nach dem Fehlerzustand die Variablen resettet werden.
